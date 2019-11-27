@@ -2,13 +2,13 @@
 	<div class="main">
 		<van-cell-group>
 			<van-cell title="头像" center is-link to="/information/picture" class="picture-box">
-				<img class="picture" src="@/assets/default_1.jpg" alt="默认图" />
+				<img class="picture" :src="msg.picture || '@/assets/default_1.jpg'" alt="默认图" />
 			</van-cell>
 			<van-cell title="昵称" :value="msg.name" is-link :clickable="false" to="/information/message?param=name"/>
 			<van-cell title="账号" :value="msg.postbox" />
 			<van-cell title="性别" :value="getGender(msg.gender)" is-link :clickable="false" to="/information/message?param=gender"/>
 			<van-cell title="地区" :value="getArea(msg.area)" is-link :clickable="false" to="/information/message?param=area"/>
-			<van-cell title="出生年月" :value="msg.birth || '未填写'" is-link :clickable="false" to="/information/message?param=birth"/>
+			<van-cell title="出生年月" :value="msg.birth === '0000-00-00' ? '未填写' : msg.birth" is-link :clickable="false" to="/information/message?param=birth"/>
 			<van-cell title="个性签名" center :value="msg.signature || '未填写'" is-link :clickable="false" to="/information/message?param=signature"/>
 		</van-cell-group>
 	</div>
@@ -50,10 +50,9 @@ export default {
 			return sex
 		},
 		getArea(value) {
-			console.log(value)
 			if(value) {
 				let province = value.replace(/\d{4}$/g, '0000')
-				if(province === '970000') {
+				if(/^9/.test(province)) {
 					return areaList.city_list[value]
 				} else {
 					let city = value.replace(/\d{2}$/g, '00')

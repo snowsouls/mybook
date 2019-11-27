@@ -62,7 +62,7 @@ export default {
 									</div>
 								</div>
 							</div>
-							<div class="content" :class="item.longClick && 'longClick'" @touchstart="gotouchstart($event, index)" @touchmove="gotouchmove" @touchend="gotouchend(item)">
+							<div class="content" :class="item.longClick && 'longClick'" @touchstart="gotouchstart($event, item, index)" @touchmove="gotouchmove" @touchend="gotouchend(item.id)">
 								<div v-html="item.article"></div>
 								<div class="author">
 									<span v-if="item.author || item.provenance">——</span>
@@ -76,7 +76,7 @@ export default {
 									<img src="@/assets/like.png">
 									<span>12</span>
 								</div>
-								<div class="comment">
+								<div class="comment" @click="commentCotent(item.id)">
 									<img src="@/assets/comment.png">
 									<span>23</span>
 								</div>
@@ -97,9 +97,9 @@ export default {
 		</van-pull-refresh>
 		<div class="handleDialog" v-show="handleDialog" @touchstart.stop="hiddenDialog">
 			<div class="handle-box" :class="{bottom: triangle}" :style="{top: handleTop + 'px'}">
-				<div class="handle left">评论</div>
+				<div class="handle left" @touchstart.stop="commentCotent">评论</div>
 				<div class="handle">举报</div>
-				<div class="handle">删除</div>
+				<div class="handle" v-if="userMessage.postbox === user.postbox || userMessage.authority === '1' || userMessage.authority === '2'" @touchstart.stop="delateArticle">删除</div>
 				<div class="handle right" @touchstart.stop="copyCotent">复制</div>
 			</div>
 		</div>
@@ -108,12 +108,20 @@ export default {
 </template>
 
 <script>
-import { readArticleList } from '@/api/api'
+import { readArticleList, deteleArticle } from '@/api/api'
 let timeOutEvent = null, activeIndex = 0
 export default {
 	name: 'home',
+	computed: {
+		userMessage() {
+			return this.$store.state.userMessage
+		}
+	},
 	data() {
 		return {
+			homeTop : 0,			// 页面滚动位置
+			id: 0,					// 当前长按id
+			user: {},				// 当前长按信息
 			initLoading: true,		// 骨架屏显示
 			page: 1,
 			loading: false,			// 数据加载完成
@@ -140,7 +148,7 @@ export default {
 		_readArticleList(page, count=10) {		// 以后每次加载10条
 			readArticleList(count, page).then(res=>{
 				res.data.forEach(item=>{
-					item.user.picture = 'https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1571574226266&di=09752d97631e9197fc1f83ec5106cd20&imgtype=0&src=http%3A%2F%2Fpic33.nipic.com%2F20131008%2F13661616_134400215000_2.jpg'
+					// item.user.picture = item.user.picture.replace(/www\.mybook\.com/g, '192.168.1.94/tp5')	// 本地测试使用
 					item.longClick = false
 				})
 				if(res.data.length < count) {
@@ -161,8 +169,10 @@ export default {
 				this.isLoading = false
 			}, 500);
 		},
-		gotouchstart(event, index){
+		gotouchstart(event, item, index){
 			timeOutEvent = setTimeout(()=> {
+				this.id = item.id
+				this.user = item.user
 				let location = event.target.getBoundingClientRect()
 				if(location.top >= 60) {
 					this.triangle = false
@@ -176,18 +186,19 @@ export default {
 				}
 				activeIndex = index
 				this.articleList[activeIndex].longClick = true
+				this.handleDialog = true
+				clearTimeout(timeOutEvent)
 				timeOutEvent = null
-				this.handleDialog = true	
 			},600);//这里设置定时
 		},
 		//手释放，如果在500毫秒内就释放，则取消长按事件，此时可以执行onclick应该执行的事件
-		gotouchend(item){
+		gotouchend(id){
+			if(timeOutEvent){
+				//这里写要执行的内容,如onclick事件
+				this.$router.push({path: `detail?id=${id}`})
+			}
 			clearTimeout(timeOutEvent)
 			timeOutEvent = null
-			if(timeOutEvent){
-				//这里写要执行的内容（尤如onclick事件
-				console.log(item)
-			}
 		},
 		//如果手指有移动，则取消所有事件，此时说明用户只是要移动而不是长按 
 		gotouchmove(){
@@ -198,6 +209,7 @@ export default {
 			this.articleList[activeIndex].longClick = false
 			this.handleDialog = false
 		},
+		// 复制
 		copyCotent() {
 			clearTimeout(timeOutEvent)
 			this.hiddenDialog()
@@ -208,10 +220,46 @@ export default {
 			this.$toast("已复制到剪贴板")
 			
 			// var clipboard = new Clipboard('#copybox');'\r'
+		},
+		commentCotent(id) {
+			this.hiddenDialog()
+			this.$router.push({path: `detail?id=${id || this.articleList[activeIndex].id}`})
+		},
+		// 删除
+		delateArticle() {
+			this.hiddenDialog()
+			this.$dialog.confirm({
+					title: '提示',
+					message: '确认删除此文章？'
+				}).then(() => {
+					deteleArticle(this.userMessage.postbox, this.id).then(res=>{
+						if(res.status === 200) {
+							this.$toast(res.message)
+							this.articleList.splice(activeIndex, 1)
+						} else {
+							this.$toast(res.error)
+						}
+						
+					})
+				}).catch(() => {
+					// on cancel
+			});
 		}
 	},
-	mounted() {
+	created() {
 		this._readArticleList(this.page, this.count)	// 第一次加载20条
+		this.$nextTick(()=> {
+			document.documentElement.scrollTop = this.homeTop
+		})
+	},
+	activated() {
+		this.$nextTick(()=> {
+			document.documentElement.scrollTop = this.homeTop
+		})
+	},
+	beforeRouteLeave (to, from, next) {
+	    this.homeTop = document.documentElement.scrollTop
+	    next()
 	}
 }
 </script>
@@ -306,7 +354,7 @@ export default {
 		#copybox {
 			position: fixed;
 			top: 0;
-			left: -99px;
+			left: -300px;
 			z-index: -99;
 			opacity: 0;
 		}

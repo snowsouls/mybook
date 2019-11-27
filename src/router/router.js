@@ -1,18 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-import Initial from '../views/Initial'
-import Home from '../views/Home'
-import HomePage from '../views/home/Home'
-import AddPage from '../views/home/Add'
-import MyPage from '../views/home/My'
-import Login from '../views/login/Login'
-import Register from '../views/login/Register'
-import Information from '../views/login/Information'
-import Picture from '../views/login/Picture'
-import Message from '../views/login/Message'
-import Settings from '../views/settings/Settings'
-
 Vue.use(Router)
 
 export default new Router({
@@ -21,33 +9,36 @@ export default new Router({
         {
             path: '/',
             name: 'initial',
-            component: Initial,
+            component: ()=> import('@/views/Initial'),
             meta: {
-                keepAlive: true // 需要被缓存
+                keepAlive: false // 需要被缓存
             }
         },
         {
             path: '',
             name: 'home',
-            component: Home,
+            component: ()=> import('@/views/Home'),
+            meta: {
+                keepAlive: true // 需要被缓存
+            },
             children: [
                 {
                     path: '/home',
-                    component: HomePage,
+                    component: ()=> import('@/views/home/Home'),
                     meta: {
                         title: '首页',
                         keepAlive: true // 需要被缓存
                     }
                 },{
                     path: '/add',
-                    component: AddPage,
+                    component: ()=> import('@/views/home/Add'),
                     meta: {
                         title: '添加',
                         keepAlive: true // 需要被缓存
                     }
                 },{
                     path: '/my',
-                    component: MyPage,
+                    component: ()=> import('@/views/home/My'),
                     meta: {
                         title: '我的',
                         keepAlive: true // 需要被缓存
@@ -58,7 +49,7 @@ export default new Router({
         {
             path: '/login',
             name: 'login',
-            component: Login,
+            component: ()=> import('@/views/login/Login'),
             meta: {
                 keepAlive: false // 需要被缓存
             }
@@ -66,7 +57,7 @@ export default new Router({
         {
             path: '/register',
             name: 'register',
-            component: Register,
+            component: ()=> import('@/views/login/Register'),
             meta: {
                 keepAlive: false // 需要被缓存
             }
@@ -74,7 +65,7 @@ export default new Router({
         {
             path: '/information',
             name: 'information',
-            component: Information,
+            component: ()=> import('@/views/login/Information'),
             meta: {
                 keepAlive: true // 需要被缓存
             }
@@ -82,7 +73,7 @@ export default new Router({
         {
             path: '/information/picture',
             name: 'inforPicture',
-            component: Picture,
+            component: ()=> import('@/views/login/Picture'),
             meta: {
                 keepAlive: true // 需要被缓存
             }
@@ -90,7 +81,7 @@ export default new Router({
         {
             path: '/information/message',
             name: 'inforMessage',
-            component: Message,
+            component: ()=> import('@/views/login/Message'),
             meta: {
                 keepAlive: false // 需要被缓存
             }
@@ -98,10 +89,34 @@ export default new Router({
         {
             path: '/settings',
             name: 'settings',
-            component: Settings,
+            component: ()=> import('@/views/settings/Settings'),
             meta: {
                 keepAlive: false // 需要被缓存
             }
         },
-    ]
+        {
+            path: '/detail',
+            name: 'detail',
+            component: ()=> import('@/views/detail/Detail'),
+            meta: {
+                keepAlive: false // 需要被缓存
+            }
+        },
+        {
+            path: '*',
+            name: 'error',
+            component: ()=> import('@/views/home/Home'),
+            meta: {
+                keepAlive: true // 需要被缓存
+            }
+        },
+    ],
+    scrollBehavior(to, from, savedPosition) {
+        // return 期望滚动到哪个的位置
+        if(savedPosition){
+            return savedPosition;
+        }else{
+            return {x:0,y:0}
+        }
+    }
 })

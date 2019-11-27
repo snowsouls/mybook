@@ -63,6 +63,7 @@
 
 <script>
 import areaList from '@/assets/json/area'
+import { UESR_MESSAGE } from '@/store/mutation-types'
 export default {
 	name: 'message',
 	computed: {
@@ -98,7 +99,12 @@ export default {
 	},
 	methods: {
 		changeMsg() {
-			this.$store.state.userMessage[this.flag] = this.value
+			if(this.flag === 'area') {
+				this.$store.state.userMessage[this.flag] = this.areaCode
+			} else {
+				this.$store.state.userMessage[this.flag] = this.value
+			}
+			this.$store.commit(UESR_MESSAGE)
 			this.$router.history.go(-1)
 		},
 		choseArea(value) {
@@ -122,31 +128,77 @@ export default {
 			setTimeout(()=>{
 				this.$refs.inputValue.focus()
 			},300)
+		},
+		_initMsg() {
+			switch(this.flag) {
+				case 'name':
+					this.value = this.$store.state.userMessage['name']
+					this.onInputFocus()
+					break;
+				case 'gender':
+					this.value = this.$store.state.userMessage["gender"]
+					break;
+				case 'area':
+					let areaCode = this.areaCode = this.$store.state.userMessage.area
+					if(areaCode) {
+						let province = areaCode.replace(/\d{4}$/g, '0000')
+						if(/^9/.test(province)) {
+							this.value = this.areaList.city_list[areaCode]
+						} else {
+							let city = areaCode.replace(/\d{2}$/g, '00')
+							this.value = this.areaList.province_list[province] + '-' + this.areaList.city_list[city] + '-' + this.areaList.county_list[areaCode]
+						}
+					} else {
+						this.value = '未填写'
+					}
+					break;
+				case 'birth':
+					let time = this.$store.state.userMessage.birth
+					this.value = time === '0000-00-00' ? '未填写' : time
+					let date = (time && time !== '0000-00-00') ? time : this._formatDate(new Date())
+					this.currentDate = new Date(Date.parse(date.replace(/-/g, "/")))
+					break;
+				case 'name':
+				case 'signature':
+					this.value = this.$store.state.userMessage[this.flag]
+					break;
+				default:
+					this.$router.replace({
+						path: '/home'
+					})
+			}
 		}
 	},
 	created() {
 		this.flag = this.$route.query.param
-		if(this.flag !== 'area') {
-			this.value = this.$store.state.userMessage[this.flag] || '未填写'
-		}
-		if(this.flag === 'name') {
-			this.onInputFocus()
-		}
-		if(this.flag === 'area') {
-			this.areaCode = this.$store.state.userMessage.area
-			let areaCode = this.$store.state.userMessage.area
-			let province = areaCode.replace(/\d{4}$/g, '0000')
-			if(province === '970000') {
-				this.value = this.areaList.city_list[areaCode]
-			} else {
-				let city = areaCode.replace(/\d{2}$/g, '00')
-				this.value = this.areaList.province_list[province] + '-' + this.areaList.city_list[city] + '-' + this.areaList.county_list[areaCode]
-			}
-		}
-		if(this.flag === 'birth') {
-			let date = this.$store.state.userMessage.birth || this._formatDate(new Date())
-			this.currentDate = new Date(Date.parse(date.replace(/-/g, "/")))
-		}
+		// if(this.flag !== 'area') {
+		// 	this.value = this.$store.state.userMessage[this.flag]
+		// }
+		// if(this.flag === 'name') {
+		// 	this.onInputFocus()
+		// }
+		// if(this.flag === 'area') {
+		// 	this.areaCode = this.$store.state.userMessage.area
+		// 	let areaCode = this.$store.state.userMessage.area
+		// 	if(areaCode) {
+		// 		let province = areaCode.replace(/\d{4}$/g, '0000')
+		// 		if(/^9/.test(province)) {
+		// 			this.value = this.areaList.city_list[areaCode]
+		// 		} else {
+		// 			let city = areaCode.replace(/\d{2}$/g, '00')
+		// 			this.value = this.areaList.province_list[province] + '-' + this.areaList.city_list[city] + '-' + this.areaList.county_list[areaCode]
+		// 		}
+		// 	} else {
+		// 		this.value = '未填写'
+		// 	}
+		// }
+		// if(this.flag === 'birth') {
+		// 	let time = this.$store.state.userMessage.birth
+		// 	this.value = time === '0000-00-00' ? '未填写' : time
+		// 	let date = (time && time !== '0000-00-00') ? time : this._formatDate(new Date())
+		// 	this.currentDate = new Date(Date.parse(date.replace(/-/g, "/")))
+		// }
+		this._initMsg()
 	}
 }
 </script>

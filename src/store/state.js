@@ -1,10 +1,10 @@
 const state = {
     userMessage: {}
 }
-/*从本地存储读取数据*/
-for(var item in state) {
-  localStorage.getItem(item)? state[item] = JSON.parse(localStorage.getItem(item)): false;
+
+if(!state.userMessage.postbox) {
+    if (localStorage.getItem("mybook_user_msg")) {
+    	state.userMessage = JSON.parse(localStorage.getItem("mybook_user_msg"))
+    }
 }
-
-
 export default state

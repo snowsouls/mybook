@@ -6,7 +6,14 @@ import * as types from './mutation-types'
 const matations = {
     // 个人信息
     [types.UESR_MESSAGE](state, v) {
-        state.userMessage = v
+    	if(v) {
+    		state.userMessage = v
+    	}
+    	localStorage.setItem("mybook_user_msg", JSON.stringify(state.userMessage));
+    },
+    [types.UESR_LOGOUT](state, v) {
+    	state.userMessage = {}
+    	localStorage.removeItem("mybook_user_msg")
     },
 }
 

@@ -13,6 +13,12 @@ Vue.prototype.$api = http
 
 Vue.config.productionTip = false
 
+
+router.beforeEach(function(to,from,next){
+    document.title = to.meta.title || 'mybook'
+    next()
+})
+
 new Vue({
   router,
   store,

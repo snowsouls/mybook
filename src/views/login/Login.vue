@@ -9,6 +9,7 @@
 				<van-field v-model.trim=" password.value" type="password" size="large" placeholder="密码" left-icon="closed-eye" :border="false" :clickable="true" @blur="inputEvent(password.border, '密码')" />
 			</div>
 		</div>
+		<div class="forget"><span @click="forget">忘了密码？</span></div>
 		<div class="btn">
 			<van-button type="primary" class="login-btn" :disabled="disabled" :loading="loading" loading-text="登录中..." color="#5ca52a" @click="submit"> 立即登录 </van-button>
 		</div>
@@ -87,6 +88,9 @@ export default {
 				this.$toast(name + '格式不正确')
 			}
 		},
+		forget() {
+			console.log("忘记密码")
+		},
 		submit() {
 			login(this.postbox.value, this.password.value).then(res=>{
 				if(res.status === 200) {
@@ -95,6 +99,7 @@ export default {
                         message: '登录成功',
                         duration: 1500
                     })
+                    localStorage.setItem("mybook_user_msg", JSON.stringify(res.user))
 					this.$store.commit(UESR_MESSAGE, res.user)
 					setTimeout(()=>{
 						this.$router.replace({path: '/my'})
@@ -142,9 +147,16 @@ export default {
 			}
 		}
 	}
+	.forget {
+		padding: 0 30px;
+		text-align: right;
+		line-height: 30px;
+		color: #ba602a;
+		font-size: 12px;
+	}
 	.btn {
 		text-align: center;
-		margin-top: 70px;
+		margin-top: 40px;
 		.login-btn {
 			width: 150px;
 			line-height: 45px;

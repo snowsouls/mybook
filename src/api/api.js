@@ -30,6 +30,82 @@ const publishArticle = (postbox, article, author, provenance) => new Promise((re
         reject(err)
     })
 })
+/**
+ * 删除文章
+ * user     {string} [require]     登陆者邮箱
+ * id     {number} [require]        文章id
+ */
+const deteleArticle = (user, id) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/index/deteleArticle', {
+        user,
+        id
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+/**
+ * 进入详情
+ * id     {number} [require]        文章id
+ */
+const getDetail = (id, page, count) => new Promise((resolve, reject) => {
+    axios.get(config.serverUrl + '/index/detail/getDetail', {
+        id,
+        page,
+        count
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+/**
+ * 发表评论
+ * topicId     {number} [require]        文章id
+ * postbox     {string} [require]        评论人
+ * name     {string} [require]        评论人名称
+ * picture     {string} [require]        评论人照片
+ * content     {string} [require]        评论内容
+ */
+const publishComment = (topicId, postbox, name, picture, content) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/detail/addComment', {
+        topicId,
+        postbox,
+        name,
+        picture,
+        content
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+/**
+ * 发表回复
+ * parentId         {number} [require]          评论的id
+ * commPostbox      {string} [require]          评论的人
+ * commName         {string} [require]          评论人名称
+ * content          {string} [require]          评论内容
+ * replyId          {number}                    回复的id
+ * replyPostbox     {string}                    回复人
+ * replyName        {string}                    评论人名称
+ */
+const publishReply = (parentId, commPostbox, commName, content, replyId, replyPostbox, replyName) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/detail/addReply', {
+        parentId,
+        commPostbox,
+        commName,
+        content,
+        replyId,
+        replyPostbox,
+        replyName
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
 
 /**
  * 注册
@@ -81,6 +157,10 @@ const isregister = (postbox) => new Promise((resolve, reject) => {
 export {
   readArticleList,
   publishArticle,
+  deteleArticle,
+  getDetail,
+  publishComment,
+  publishReply,
   register,
   login,
   isregister

@@ -108,7 +108,7 @@ export default {
 		},
 		_email(postbox) {
 			let _this = this
-			Ajax.request('http://localhost:8888/urlencoded',{
+			Ajax.request('http://192.168.1.94:8888/urlencoded',{
 		        data : 'email=' + _this.postbox,
 		        success : function(xhr){
 		        	let verification = JSON.parse(xhr.response);
@@ -158,6 +158,7 @@ export default {
 			this.area = value[2] ? (value[0].name + '-' + value[1].name + '-' + value[2].name) : (value[1].name)
 		},
 		submit() {
+			if(!mailReg.test(this.postbox)) {this.$toast.fail('请输入正确的邮箱地址'); return }
 			if(!passwordReg.test(this.password)) { this.$toast.fail('密码格式错误'); return }
 			if(this.name === '') { this.$toast.fail('昵称不能为空'); return }
 			if(this.postbox === '') { this.$toast.fail('邮箱不能为空'); return }
@@ -180,8 +181,8 @@ export default {
 		login(data) {
 			let _this = this
 			register(data).then(res=>{
-				if(res.succee && res.status === 200) {
-					_this.$toast('登陆成功')
+				if(res.succeed && res.status === 200) {
+					_this.$toast('注册成功')
 					setTimeout(()=>{
 						_this.$router.go(-1)
 					}, 2000)

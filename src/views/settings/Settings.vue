@@ -24,15 +24,35 @@ export default {
 }
 </style> -->
 <template>
-    <div class="heart-content">
-        <div class="anim-icon anim-icon-md heart"  >
-            <input type="checkbox" id="heart1" />
-            <label for="heart1"></label>
+    <div>
+        <div class="heart-content">
+            <div class="anim-icon anim-icon-md heart"  >
+                <input type="checkbox" id="heart1" />
+                <label for="heart1"></label>
+            </div>
         </div>
+        <div @click="logout">退出登录</div>
     </div>
 
 </template>
 
+<script>
+import { UESR_LOGOUT } from '@/store/mutation-types'
+export default {
+    name: "settings",
+    data() {
+        return {
+
+        }
+    },
+    methods: {
+        logout() {
+            this.$store.commit(UESR_LOGOUT)
+            this.$router.push({path: '/my'})
+        }
+    }
+}
+</script>
 
 <style >
     * {

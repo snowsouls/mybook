@@ -2,7 +2,8 @@
     <div class="main">
     	<router-link class="basic-style msg" :to="login ? 'information' : 'login'">
     		<div class="picture">
-    			<img src="@/assets/default_1.jpg" alt="默认图" />
+    			<img v-if="login" :src="infor.picture" alt="默认图" />
+    			<img v-else src="@/assets/default.jpg" alt="默认图" />
     		</div>
     		<div class="describe">
     			<p class="main-text">{{login ? infor.name : '立即登录'}}</p>
@@ -49,7 +50,7 @@ export default {
         }
     },
     created() {
-
+    	
     }
 }
 </script>

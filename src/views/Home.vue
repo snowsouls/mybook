@@ -1,7 +1,9 @@
 <template>
 	<div class="home">
 		<div class="content">
-			<router-view />
+			<keep-alive>
+				<router-view />
+			</keep-alive>
 		</div>
 		<div class="nav-box">
 			<router-link to="/home" class="nav home">
@@ -32,9 +34,6 @@ export default {
 		add() {
 			this.count += 1
 		}
-	},
-	mounted() {
-		console.log(this.$router)
 	}
 }
 </script>
