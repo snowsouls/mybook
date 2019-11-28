@@ -40,6 +40,7 @@
 </template>
 
 <script>
+import config from '@/config/index'
 import {Ajax, mailReg, passwordReg} from '@/util/util'
 import areaList from '@/assets/json/area'
 import { isregister, register } from '@/api/api'
@@ -108,7 +109,7 @@ export default {
 		},
 		_email(postbox) {
 			let _this = this
-			Ajax.request('http://192.168.1.94:8888/urlencoded',{
+			Ajax.request( config.nodeServe ,{
 		        data : 'email=' + _this.postbox,
 		        success : function(xhr){
 		        	let verification = JSON.parse(xhr.response);
@@ -183,9 +184,11 @@ export default {
 			register(data).then(res=>{
 				if(res.succeed && res.status === 200) {
 					_this.$toast('注册成功')
+					localStorage.setItem("mybook_user_msg", JSON.stringify(res.user))
+					this.$store.commit(UESR_MESSAGE, res.user)
 					setTimeout(()=>{
 						_this.$router.go(-1)
-					}, 2000)
+					}, 1500)
 				} else {
 					_this.disabled = this.loading = false
 					_this.$toast(res.message)

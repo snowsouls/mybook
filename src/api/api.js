@@ -3,11 +3,13 @@ import config from '@/config/index'
 
 /**
  * 读取文章
+ * userId     {string}     用户id
  */
-const readArticleList = (count, page) => new Promise((resolve, reject) => {
+const readArticleList = (count, page, id) => new Promise((resolve, reject) => {
     axios.get(config.serverUrl + '/index/index/readArticleList',{
         count,
-        page
+        page,
+        id
     }).then(res => {
         resolve(res)
     }).catch(err=>{
@@ -39,6 +41,25 @@ const deteleArticle = (user, id) => new Promise((resolve, reject) => {
     axios.post(config.serverUrl + '/index/index/deteleArticle', {
         user,
         id
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+/**
+ * 点赞
+ * typeId     {number} [require]        文章或者评论id
+ * userId     {string} [require]        评论人id
+ * type       {string}                  评论类型；1：文章,2：评论
+ * likeNum     {number}                 当前点赞数
+ */
+const likeArticle = (typeId, userId, type='1', likeNum=0) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/index/likeArticle', {
+        typeId,
+        userId,
+        type,
+        likeNum
     }).then(res => {
         resolve(res)
     }).catch(err => {
@@ -159,6 +180,7 @@ export {
   publishArticle,
   deteleArticle,
   getDetail,
+  likeArticle,
   publishComment,
   publishReply,
   register,

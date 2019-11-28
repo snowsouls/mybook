@@ -72,13 +72,15 @@ export default {
 								
 							</div>
 							<div class="like-box">
-								<div class="like">
-									<img src="@/assets/like.png">
-									<span>12</span>
+								<div class="like" @click="goLikeArticle(item.id, item)">
+									<!-- <img :src="item.isLike ? '../../assets/like-active.png' : '../../assets/like.png'"> -->
+									<img v-if="item.isLike" src="@/assets/like-active.png">
+									<img v-else src="@/assets/like.png">
+									<span>{{ item.likes || '点赞' }}</span>
 								</div>
 								<div class="comment" @click="commentCotent(item.id)">
 									<img src="@/assets/comment.png">
-									<span>23</span>
+									<span>{{ item.commnum || '评论' }}</span>
 								</div>
 								<div class="like">
 									<img src="@/assets/collect.png">
@@ -108,7 +110,7 @@ export default {
 </template>
 
 <script>
-import { readArticleList, deteleArticle } from '@/api/api'
+import { readArticleList, deteleArticle, likeArticle } from '@/api/api'
 let timeOutEvent = null, activeIndex = 0
 export default {
 	name: 'home',
@@ -149,6 +151,7 @@ export default {
 			readArticleList(count, page).then(res=>{
 				res.data.forEach(item=>{
 					// item.user.picture = item.user.picture.replace(/www\.mybook\.com/g, '192.168.1.94/tp5')	// 本地测试使用
+					item.isLike = false
 					item.longClick = false
 				})
 				if(res.data.length < count) {
@@ -224,6 +227,20 @@ export default {
 		commentCotent(id) {
 			this.hiddenDialog()
 			this.$router.push({path: `detail?id=${id || this.articleList[activeIndex].id}`})
+		},
+		goLikeArticle(id, item) {
+			let user = this.$store.state.userMessage
+			if(user.postbox) {
+				likeArticle(id, String(user.id), '1', item.likes || 0).then(res=>{
+					if(res.status === 200) {
+						this.$toast(res.message)
+						item.likes = res.isLike ? (item.likes + 1) : (item.likes - 1)
+						item.isLike = res.isLike
+					}
+				})
+			} else {
+				this.$router.push('login')
+			}
 		},
 		// 删除
 		delateArticle() {
@@ -337,13 +354,15 @@ export default {
 						width: 34%;
 					}
 					img {
-						width: 20px;
-						height: 20px;
+						width: 16px;
+						height: 16px;
 						vertical-align: middle;
 					}
 					span {
-						font-size: 16px;
-						vertical-align: bottom;
+						font-size: 14px;
+						color: #666;
+						margin-left: 4px;
+						vertical-align: middle;
 					}
 				}
 			}
