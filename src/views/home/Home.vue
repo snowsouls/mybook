@@ -1,51 +1,3 @@
-<!-- <template>
-	<div class="home">
-		我是列表	
-		<div v-for="item in msg">
-			{{ item | adjustTime }}
-		</div>
-		<div @click="change">点赞</div>
-		<div>{{this.$store.state.information.name || '请先登录'}}</div>
-	</div>
-</template>
-
-<script>
-import VueStar from 'vue-star'
-export default {
-	name: 'home',
-	data() {
-		return {
-			msg: ['2014-11-08 12:12:08', '2019-01-08 12:12:08', '2019-01-08 12:12:08', '2019-01-08 12:12:08', '2019-01-08 12:12:08'],
-			width: 175, //初始宽度
-			height: 400, //初始高度
-			heartList: [], //初始数组
-			heartCount: 0 //累加计数初始值
-		}
-	},
-	filters: {
-		adjustTime: function(value) {
-			let newTime = value.slice(0, -3)
-			return newTime
-		}
-	},
-	methods: {
-		change() {
-			this.$store.commit('changeMsg')
-		}
-	},
-	mounted() {
-		
-	}
-}
-</script>
-
-<style lang="less" scoped>
-	.like-heart {
-		width: 40px;
-		height: 40px;
-	}
-</style>
- -->
  <template>
 	<div class="home">
 		<van-pull-refresh v-model="isLoading" @refresh="onRefresh">
@@ -148,10 +100,9 @@ export default {
 	},
 	methods: {
 		_readArticleList(page, count=10) {		// 以后每次加载10条
-			readArticleList(count, page).then(res=>{
+			readArticleList(count, page, this.userMessage.id).then(res=>{
 				res.data.forEach(item=>{
 					// item.user.picture = item.user.picture.replace(/www\.mybook\.com/g, '192.168.1.94/tp5')	// 本地测试使用
-					item.isLike = false
 					item.longClick = false
 				})
 				if(res.data.length < count) {
@@ -229,7 +180,7 @@ export default {
 			this.$router.push({path: `detail?id=${id || this.articleList[activeIndex].id}`})
 		},
 		goLikeArticle(id, item) {
-			let user = this.$store.state.userMessage
+			let user = this.userMessage
 			if(user.postbox) {
 				likeArticle(id, String(user.id), '1', item.likes || 0).then(res=>{
 					if(res.status === 200) {

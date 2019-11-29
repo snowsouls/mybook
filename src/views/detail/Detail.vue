@@ -19,9 +19,6 @@
 				</div>
 			</div>
 		</div>
-		<div v-if="comments.length">
-			
-		</div>
 		<van-list v-model="loading"	:finished="finished" :immediate-check="false" :finished-text="finishedText"	@load="onLoad">
 			<div class="comment-box">
 				<div class="comment" v-for="(item,index) in comments" :key="index">
@@ -34,14 +31,14 @@
 						<div class="content">{{item.content}}</div>
 						<div class="handle-box">
 							<span class="time">{{item.time | transformDate}} · </span>
-							<span class="reply" @click="replyComment(item.name, item.id)">回复</span>
+							<span class="reply" @click="replyComment(item.name, item.id, index)">回复</span>
 						</div>
 						<div class="reply-box" v-if="item.replys.length > 0">
 							<div v-for="(reply, replyIndex) in item.replys" :key="replyIndex">
 								<span class="text name">{{reply.comment_name}}</span>
 								<span class="text old" v-if="reply.reply_name">回复</span>
 								<span class="text name" v-if="reply.reply_name">{{reply.reply_name}}</span>
-								<span class="text msg" @click="replyOthers(item.id, reply.id, reply.comment_postbox, reply.comment_name)">：{{reply.content}}</span>
+								<span class="text msg" @click="replyOthers(item.id, reply.id, reply.user_id, reply.comment_name, index)">：{{reply.content}}</span>
 							</div>
 						</div>
 					</div>
@@ -124,9 +121,11 @@ export default {
 			info: '',		// 文章
 			comments: [],	// 评论
 			content: '',
+			commentIndex: 0,				// 二级回复index
+			commentKey: 0,				// 二级回复key
 			commentId: 0,					// 被回复评论的id
 			replyId: 0,						// 三级回复 被回复的id
-			postbox: '',					// 三级回复 被回复的邮箱
+			id: '',					// 三级回复 被回复的邮箱id
 			name: '',						// 三级回复 被回复的name
 			placeholder: '发表神评妙论...'	// input默认文字
 		}
@@ -174,7 +173,7 @@ export default {
 		publishContent() {
 			let user = this.$store.state.userMessage
 			if(user.postbox) {
-				publishComment(comment_id, user.postbox, user.name, user.picture, this.content).then(res=>{
+				publishComment(comment_id, user.id, user.name, user.picture, this.content).then(res=>{
 					if(res.status === 200) {
 						this.$toast('评论成功')
 						this.comments.unshift({
@@ -191,25 +190,24 @@ export default {
 			}
 		},
 		// 回复2级评论
-		replyComment(name, id) {
+		replyComment(name, id, index) {
 			this.placeholder = `回复${name}:`
 			this.publishStatus = '2'
 			this.$refs.vanField.focus()
 			this.commentId = id
+			this.commentIndex = index
 		},
 		// 发表2级回复
 		publishReplys() {
 			let user = this.$store.state.userMessage
 			if(user.postbox) {
-				publishReply(this.commentId, user.postbox, user.name, this.content).then(res=>{
+				publishReply(this.commentId, user.id, user.name, this.content).then(res=>{
 					if(res.status === 200) {
 						this.$toast('回复成功')
-						// this.comments.unshift({
-						// 	picture: user.picture,
-						// 	name: user.name,
-						// 	content: this.content,
-						// 	time: '刚刚'
-						// })
+						this.comments[this.commentIndex]['replys'].unshift({
+							comment_name: user.name,
+							content: this.content
+						})
 						this.content = ''
 					}
 				})
@@ -218,28 +216,28 @@ export default {
 			}
 		},
 		// 回复3级评论
-		replyOthers(id, replyId, postbox, name) {
+		replyOthers(id, replyId, userId, name, index) {
 			this.placeholder = `回复${name}:`
 			this.publishStatus = '3'
 			this.$refs.vanField.focus()
 			this.commentId = id
 			this.replyId = replyId
-			this.postbox = postbox
+			this.id = userId
 			this.name = name
+			this.commentIndex = index
 		},
 		// 发表3级回复
 		publishReplyOthers() {
 			let user = this.$store.state.userMessage
 			if(user.postbox) {
-				publishReply(this.commentId, user.postbox, user.name, this.content, this.replyId, this.postbox, this.name).then(res=>{
+				publishReply(this.commentId, user.id, user.name, this.content, this.replyId, this.id, this.name).then(res=>{
 					if(res.status === 200) {
 						this.$toast('回复成功')
-						// this.comments.unshift({
-						// 	picture: user.picture,
-						// 	name: user.name,
-						// 	content: this.content,
-						// 	time: '刚刚'
-						// })
+						this.comments[this.commentIndex]['replys'].unshift({
+							comment_name: user.name,
+							content: this.content,
+							reply_name: this.name
+						})
 						this.content = ''
 					}
 				})

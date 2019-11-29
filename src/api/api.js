@@ -84,15 +84,15 @@ const getDetail = (id, page, count) => new Promise((resolve, reject) => {
 /**
  * 发表评论
  * topicId     {number} [require]        文章id
- * postbox     {string} [require]        评论人
+ * userId     {number} [require]        评论人id
  * name     {string} [require]        评论人名称
  * picture     {string} [require]        评论人照片
  * content     {string} [require]        评论内容
  */
-const publishComment = (topicId, postbox, name, picture, content) => new Promise((resolve, reject) => {
+const publishComment = (topicId, userId, name, picture, content) => new Promise((resolve, reject) => {
     axios.post(config.serverUrl + '/index/detail/addComment', {
         topicId,
-        postbox,
+        userId,
         name,
         picture,
         content
@@ -105,21 +105,21 @@ const publishComment = (topicId, postbox, name, picture, content) => new Promise
 /**
  * 发表回复
  * parentId         {number} [require]          评论的id
- * commPostbox      {string} [require]          评论的人
+ * commUserId      {number} [require]          评论的人id
  * commName         {string} [require]          评论人名称
  * content          {string} [require]          评论内容
  * replyId          {number}                    回复的id
- * replyPostbox     {string}                    回复人
+ * replyUserId     {number}                    回复人id
  * replyName        {string}                    评论人名称
  */
-const publishReply = (parentId, commPostbox, commName, content, replyId, replyPostbox, replyName) => new Promise((resolve, reject) => {
+const publishReply = (parentId, commUserId, commName, content, replyId, replyUserId, replyName) => new Promise((resolve, reject) => {
     axios.post(config.serverUrl + '/index/detail/addReply', {
         parentId,
-        commPostbox,
+        commUserId,
         commName,
         content,
         replyId,
-        replyPostbox,
+        replyUserId,
         replyName
     }).then(res => {
         resolve(res)
