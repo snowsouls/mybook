@@ -57,15 +57,20 @@
 				<div class="handle right" @touchstart.stop="copyCotent">复制</div>
 			</div>
 		</div>
+		<div v-if="isleave">
+			<GoTop />
+		</div>
 		<input type="text" id="copybox" ref="copybox">
 	</div>
 </template>
 
 <script>
+import GoTop from '@/components/goTop'
 import { readArticleList, deteleArticle, likeArticle } from '@/api/api'
 let timeOutEvent = null, activeIndex = 0
 export default {
 	name: 'home',
+	components: { GoTop },
 	computed: {
 		userMessage() {
 			return this.$store.state.userMessage
@@ -84,7 +89,8 @@ export default {
 			handleDialog: false,	// 操作页是否显示
 			handleTop: 0,			// 操作页位置
 			triangle: false,		// 操作框小三角的位置，默认在下面
-			articleList: []
+			articleList: [],
+			isleave: true			// bug：快速离开再进入home，goTop会立即出现再消除
 		}
 	},
 	filters: {
@@ -118,6 +124,7 @@ export default {
 			this._readArticleList(this.page)
 		},
 		onRefresh() {
+			this._readArticleList(1)
 			setTimeout(() => {
 				this.$toast('刷新成功')
 				this.isLoading = false
@@ -182,7 +189,7 @@ export default {
 		goLikeArticle(id, item) {
 			let user = this.userMessage
 			if(user.postbox) {
-				likeArticle(id, String(user.id), '1', item.likes || 0).then(res=>{
+				likeArticle(id, String(user.id), item.likes || 0).then(res=>{
 					if(res.status === 200) {
 						this.$toast(res.message)
 						item.likes = res.isLike ? (item.likes + 1) : (item.likes - 1)
@@ -204,6 +211,9 @@ export default {
 						if(res.status === 200) {
 							this.$toast(res.message)
 							this.articleList.splice(activeIndex, 1)
+							if(this.articleList.length < 10) {
+								this.onLoad()
+							}
 						} else {
 							this.$toast(res.error)
 						}
@@ -221,12 +231,17 @@ export default {
 		})
 	},
 	activated() {
+		this.isleave = true
+		if(this.$route.params.refresh) {
+
+		}
 		this.$nextTick(()=> {
 			document.documentElement.scrollTop = this.homeTop
 		})
 	},
 	beforeRouteLeave (to, from, next) {
 	    this.homeTop = document.documentElement.scrollTop
+	    this.isleave = false
 	    next()
 	}
 }
@@ -279,6 +294,7 @@ export default {
 			.content {
 				margin-bottom: 10px;
 				position: relative;
+				word-break: break-all;
 				&.longClick {
 					background-color: #f5f5f5;
 				}

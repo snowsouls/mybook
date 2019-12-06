@@ -32,13 +32,13 @@ export default {
     },
     methods: {
         publish() {
-            let postbox = this.$store.state.userMessage.postbox
-            if(postbox) {
+            let postbox = this.$store.state.userMessage
+            if(postbox.postbox) {
                 if(this.message.trim() === '') return
                 let timer = setTimeout(()=>{
                     this.loading = true
                 },1000)
-                publishArticle(postbox, this.message,this.author,this.provenance).then(res=>{
+                publishArticle(postbox.id, this.message,this.author,this.provenance).then(res=>{
                     if(res.succee) {
                         this.message = ''
                         this.author = ''
@@ -50,7 +50,12 @@ export default {
                             duration: 2000
                         })
                         setTimeout(()=>{
-                            this.$router.push({path: '/home'})
+                            this.$router.push({
+                                name: 'home',
+                                params: {
+                                    refresh: 1
+                                }
+                            })
                         },2000)
                     }
                 })    

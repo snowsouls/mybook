@@ -20,20 +20,25 @@
 			</div>
 		</div>
 		<van-list v-model="loading"	:finished="finished" :immediate-check="false" :finished-text="finishedText"	@load="onLoad">
-			<div class="comment-box">
-				<div class="comment" v-for="(item,index) in comments" :key="index">
-					<img :src="item.picture" alt="图像" />
+			<transition-group name="fade" tag="ul" class="comment-box">
+				<li class="comment" v-for="(item,index) in comments" :key="item.id">
+					<img :src="item.picture" class="picture" alt="图像" />
 					<div class="right">
 						<div class="name-box">
 							<div class="name">{{item.name}}</div>
-							<div class="zan">12</div>
+							<div class="zan" @click="giveLike(item, index)">
+								<img v-if="item.isLike" src="@/assets/like-active.png">
+								<img v-else src="@/assets/like.png">
+								<span>{{ item.likes || '赞' }}</span>
+							</div>
 						</div>
 						<div class="content">{{item.content}}</div>
 						<div class="handle-box">
 							<span class="time">{{item.time | transformDate}} · </span>
 							<span class="reply" @click="replyComment(item.name, item.id, index)">回复</span>
+							<span v-if="userMessage.id === item.user_id" class="reply" @click="delateComment(item.id, index)"> · 删除</span>
 						</div>
-						<div class="reply-box" v-if="item.replys.length > 0">
+						<div class="reply-box" v-if="item.replys && item.replys.length > 0">
 							<div v-for="(reply, replyIndex) in item.replys" :key="replyIndex">
 								<span class="text name">{{reply.comment_name}}</span>
 								<span class="text old" v-if="reply.reply_name">回复</span>
@@ -42,13 +47,13 @@
 							</div>
 						</div>
 					</div>
-				</div>
-				<div v-if="noComment" class="noComment">
+				</li>
+				<div v-if="comments.length === 0" class="noComment" key="noComment">
 					<img class="img" src="@/assets/noComment.png" alt="图像" />
 					<p class="text">还没有人评论，点击抢沙发~</p>
 					<van-button class="btn" color="#bfbfbf" plain>立即评论</van-button>
 				</div>
-			</div>
+			</transition-group>
 		</van-list>
 		<div class="fixed-box">
 			<!-- <input type="text" v-model="content">
@@ -70,7 +75,7 @@
 
 <script>
 let comment_id = 0
-import { getDetail, publishComment, publishReply } from '@/api/api'
+import { getDetail, publishComment, publishReply, delateReply, likeComment } from '@/api/api'
 export default {
 	name: "detail",
 	filters: {
@@ -109,6 +114,11 @@ export default {
 			}
 		}
 	},
+	computed: {
+		userMessage() {
+			return this.$store.state.userMessage
+		}
+	},
 	data() {
 		return {
 			page: 1,
@@ -116,7 +126,6 @@ export default {
 			loading: false,					// 数据加载完成
 			finished: false,				// 数据全部加载完毕
 			finishedText: '没有更多了',		// 数据全部加载完毕后的提示文字
-			noComment: false,				// 是否有评论
 			publishStatus: '1',				// 评论状态，1：是1级评论（评论文章的），2：是2级评论（回复1级评论），3：是回复2级评论的
 			info: '',		// 文章
 			comments: [],	// 评论
@@ -132,7 +141,7 @@ export default {
 	},
 	methods: {
 		_getDeail(id) {
-			getDetail(id, this.page, this.count).then(res=>{
+			getDetail(id, this.page, this.count, String(this.userMessage.id)).then(res=>{
 				if(res.status === 200) {
 					this.info = res.data
 					this.comments = this.comments.concat(res.comment.data)
@@ -141,7 +150,6 @@ export default {
 					}
 					if(res.comment.data.length === 0) {
 						this.finishedText = ""
-						this.noComment = true
 					}
 					this.page += 1
 					this.loading = false
@@ -154,15 +162,12 @@ export default {
 		publish() {
 			switch(this.publishStatus) {
 				case '1':
-					console.log('1111111111')
 					this.publishContent()
 					break;
 				case '2':
-					console.log('2222222222')
 					this.publishReplys()
 					break;
 				case '3':
-					console.log('333333333')
 					this.publishReplyOthers()
 					break;
 				default:
@@ -172,14 +177,16 @@ export default {
 		// 发表1级评论
 		publishContent() {
 			let user = this.$store.state.userMessage
-			if(user.postbox) {
-				publishComment(comment_id, user.id, user.name, user.picture, this.content).then(res=>{
+			if(this.userMessage.postbox) {
+				publishComment(comment_id, this.userMessage.id, this.userMessage.name, this.userMessage.picture, this.content).then(res=>{
 					if(res.status === 200) {
 						this.$toast('评论成功')
 						this.comments.unshift({
-							picture: user.picture,
-							name: user.name,
+							id: parseInt(res.succeeId),
+							picture: this.userMessage.picture,
+							name: this.userMessage.name,
 							content: this.content,
+							user_id: this.userMessage.id,
 							time: '刚刚'
 						})
 						this.content = ''
@@ -199,13 +206,12 @@ export default {
 		},
 		// 发表2级回复
 		publishReplys() {
-			let user = this.$store.state.userMessage
-			if(user.postbox) {
-				publishReply(this.commentId, user.id, user.name, this.content).then(res=>{
+			if(this.userMessage.postbox) {
+				publishReply(this.commentId, this.userMessage.id, this.userMessage.name, this.content).then(res=>{
 					if(res.status === 200) {
 						this.$toast('回复成功')
 						this.comments[this.commentIndex]['replys'].unshift({
-							comment_name: user.name,
+							comment_name: this.userMessage.name,
 							content: this.content
 						})
 						this.content = ''
@@ -228,13 +234,12 @@ export default {
 		},
 		// 发表3级回复
 		publishReplyOthers() {
-			let user = this.$store.state.userMessage
-			if(user.postbox) {
-				publishReply(this.commentId, user.id, user.name, this.content, this.replyId, this.id, this.name).then(res=>{
+			if(this.userMessage.postbox) {
+				publishReply(this.commentId, this.userMessage.id, this.userMessage.name, this.content, this.replyId, this.id, this.name).then(res=>{
 					if(res.status === 200) {
 						this.$toast('回复成功')
 						this.comments[this.commentIndex]['replys'].unshift({
-							comment_name: user.name,
+							comment_name: this.userMessage.name,
 							content: this.content,
 							reply_name: this.name
 						})
@@ -244,6 +249,38 @@ export default {
 			} else {
 				this.$router.push('login')
 			}
+		},
+		// 评论点赞
+		giveLike(item, index) {
+			if(this.userMessage.postbox) {
+				likeComment(item.id, String(this.userMessage.id), item.likes || 0).then(res=>{
+					if(res.status === 200) {
+						this.$toast(res.message)
+						item.likes = res.isLike ? (item.likes + 1) : (item.likes - 1)
+						item.isLike = res.isLike
+					}
+				})
+			} else {
+				this.$router.push('login')
+			}
+		},
+		delateComment(id, index) {
+			this.$dialog.confirm({
+					title: '提示',
+					message: '确认删除评论？'
+				}).then(() => {
+					delateReply(id).then(res=>{
+						if(res.status === 200) {
+							this.$toast(res.message)
+							this.comments.splice(index, 1)
+						} else {
+							this.$toast(res.error)
+						}
+					})
+				}).catch(() => {
+					// on cancel
+			});
+			
 		}
 	},
 	created() {
@@ -308,10 +345,10 @@ export default {
 		.comment {
 			padding-bottom: 20px;
 			display: flex;
-			&:last-child {
-				padding-bottom: 0;
-			}
-			img {
+			// &:last-child {
+			// 	padding-bottom: 0;
+			// }
+			.picture {
 				flex: none;
 				width: 32px;
 				height: 32px;
@@ -328,6 +365,19 @@ export default {
 					.name {
 						font-size: 14px;
 						color: #07c0fc;
+					}
+					.zan {
+						span {
+							color: #999;
+							font-size: 12px;
+							vertical-align: middle;
+							margin-left: 4px;
+						}
+						img {
+							width: 16px;
+							height: 16px;
+							vertical-align: middle;
+						}
 					}
 				}
 				.content {
@@ -396,5 +446,31 @@ export default {
 		left: 0;
 		bottom: 0;
 	}
+
+.fade-enter {
+	transform: translateY(-100%);
+}
+.fade-leave-to{
+    opacity: 0;
+    // transform: translateY(100%);
+    // height: 0;
+}
+.fade-enter-active {
+	opacity: 0;
+    transition: transform .5s ease;
+}
+
+.fade-leave-active {
+	opacity: 0;
+    transition: transform 1s ease;
+}
+
+.fade-move{
+   transition: transform 1s ease;
+}
+.fade-leave-active{
+    position: absolute;
+}
+
 }
 </style>

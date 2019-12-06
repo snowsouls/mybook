@@ -20,9 +20,9 @@ const readArticleList = (count, page, id) => new Promise((resolve, reject) => {
 /**
  * 发布文章
  */
-const publishArticle = (postbox, article, author, provenance) => new Promise((resolve, reject) => {
+const publishArticle = (userId, article, author, provenance) => new Promise((resolve, reject) => {
     axios.post(config.serverUrl + '/index/index/publishArticle', {
-        postbox,
+        userId,
         article,
         author,
         provenance
@@ -48,17 +48,15 @@ const deteleArticle = (user, id) => new Promise((resolve, reject) => {
     })
 })
 /**
- * 点赞
- * typeId     {number} [require]        文章或者评论id
+ * 文章点赞
+ * typeId     {number} [require]        文章id
  * userId     {string} [require]        评论人id
- * type       {string}                  评论类型；1：文章,2：评论
  * likeNum     {number}                 当前点赞数
  */
 const likeArticle = (typeId, userId, type='1', likeNum=0) => new Promise((resolve, reject) => {
     axios.post(config.serverUrl + '/index/index/likeArticle', {
         typeId,
         userId,
-        type,
         likeNum
     }).then(res => {
         resolve(res)
@@ -69,12 +67,16 @@ const likeArticle = (typeId, userId, type='1', likeNum=0) => new Promise((resolv
 /**
  * 进入详情
  * id     {number} [require]        文章id
+ * page     {number} [require]        第几页
+ * count     {number}               每页条数
+ * userId     {number}             userid
  */
-const getDetail = (id, page, count) => new Promise((resolve, reject) => {
+const getDetail = (id, page, count, userId) => new Promise((resolve, reject) => {
     axios.get(config.serverUrl + '/index/detail/getDetail', {
         id,
         page,
-        count
+        count,
+        userId
     }).then(res => {
         resolve(res)
     }).catch(err => {
@@ -103,6 +105,19 @@ const publishComment = (topicId, userId, name, picture, content) => new Promise(
     })
 })
 /**
+ * 删除评论
+ * id     {number} [require]        评论id
+ */
+const delateReply = (id) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/detail/delateReply', {
+        id
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+/**
  * 发表回复
  * parentId         {number} [require]          评论的id
  * commUserId      {number} [require]          评论的人id
@@ -121,6 +136,24 @@ const publishReply = (parentId, commUserId, commName, content, replyId, replyUse
         replyId,
         replyUserId,
         replyName
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
+/**
+ * 评论点赞
+ * typeId     {number} [require]        评论id
+ * userId     {string} [require]        评论人id
+ * likeNum     {number}                 当前点赞数
+ */
+const likeComment = (typeId, userId, likeNum=0) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/detail/likeComment', {
+        typeId,
+        userId,
+        likeNum
     }).then(res => {
         resolve(res)
     }).catch(err => {
@@ -173,6 +206,24 @@ const isregister = (postbox) => new Promise((resolve, reject) => {
     })
 })
 
+/**
+ * 我的文章
+ * userId     {string} [require]        userid
+ * page     {number} [require]          第几页
+ * count     {number}                   每页数量
+ */
+const getPublish = (userId, page, count=10) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/my/getPublish', {
+        userId,
+        page,
+        count
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
 
 
 export {
@@ -183,7 +234,10 @@ export {
   likeArticle,
   publishComment,
   publishReply,
+  delateReply,
+  likeComment,
   register,
   login,
-  isregister
+  isregister,
+  getPublish
 }

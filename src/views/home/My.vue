@@ -14,11 +14,11 @@
     		<img src="@/assets/infor.png" alt="信息" />
     		<span class="title">我的信息</span>
     	</router-link>
-    	<router-link class="basic-style enshrine" :to="login ? 'information' : 'login'">
+    	<router-link class="basic-style enshrine" :to="login ? 'collect' : 'login'">
     		<img src="@/assets/enshrine.png" alt="收藏" />
     		<span class="title">我的收藏</span>
     	</router-link>
-    	<router-link class="basic-style enshrine" :to="login ? 'information' : 'login'">
+    	<router-link class="basic-style enshrine" :to="login ? 'publish' : 'login'">
     		<img src="@/assets/article.png" alt="文章" />
     		<span class="title">我的文章</span>
     	</router-link>

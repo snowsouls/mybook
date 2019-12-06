@@ -1,22 +1,24 @@
 import Vue from 'vue'
 import Router from 'vue-router'
+import config from '@/config/index'
 
 Vue.use(Router)
 
 export default new Router({
     mode: 'history',
+    base: config.routeUrl,
     routes: [
         {
             path: '/',
             name: 'initial',
             component: ()=> import('@/views/Initial'),
             meta: {
+                title: '序',
                 keepAlive: false // 需要被缓存
             }
         },
         {
             path: '',
-            name: 'home',
             component: ()=> import('@/views/Home'),
             meta: {
                 keepAlive: true // 需要被缓存
@@ -24,6 +26,7 @@ export default new Router({
             children: [
                 {
                     path: '/home',
+                    name: 'home',
                     component: ()=> import('@/views/home/Home'),
                     meta: {
                         title: '首页',
@@ -51,6 +54,7 @@ export default new Router({
             name: 'login',
             component: ()=> import('@/views/login/Login'),
             meta: {
+                title: '登录',
                 keepAlive: false // 需要被缓存
             }
         },
@@ -59,6 +63,7 @@ export default new Router({
             name: 'register',
             component: ()=> import('@/views/login/Register'),
             meta: {
+                title: '注册',
                 keepAlive: false // 需要被缓存
             }
         },
@@ -67,6 +72,7 @@ export default new Router({
             name: 'information',
             component: ()=> import('@/views/login/Information'),
             meta: {
+                title: '我的',
                 keepAlive: true // 需要被缓存
             }
         },
@@ -75,6 +81,7 @@ export default new Router({
             name: 'inforPicture',
             component: ()=> import('@/views/login/Picture'),
             meta: {
+                title: '我的图像',
                 keepAlive: true // 需要被缓存
             }
         },
@@ -83,6 +90,7 @@ export default new Router({
             name: 'inforMessage',
             component: ()=> import('@/views/login/Message'),
             meta: {
+                title: '我的信息',
                 keepAlive: false // 需要被缓存
             }
         },
@@ -91,6 +99,7 @@ export default new Router({
             name: 'settings',
             component: ()=> import('@/views/settings/Settings'),
             meta: {
+                title: '设置',
                 keepAlive: false // 需要被缓存
             }
         },
@@ -99,14 +108,34 @@ export default new Router({
             name: 'detail',
             component: ()=> import('@/views/detail/Detail'),
             meta: {
+                title: '详情',
                 keepAlive: false // 需要被缓存
+            }
+        },
+        {
+            path: '/collect',
+            name: 'collect',
+            component: ()=> import('@/views/my/Collect'),
+            meta: {
+                title: '我的收藏',
+                keepAlive: true // 需要被缓存
+            }
+        },
+         {
+            path: '/publish',
+            name: 'publish',
+            component: ()=> import('@/views/my/Publish'),
+            meta: {
+                title: '我的文章',
+                keepAlive: true // 需要被缓存
             }
         },
         {
             path: '*',
             name: 'error',
-            component: ()=> import('@/views/home/Home'),
+            component: ()=> import('@/views/404'),
             meta: {
+                title: '404',
                 keepAlive: true // 需要被缓存
             }
         },

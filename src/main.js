@@ -3,6 +3,9 @@ import App from './App.vue'
 import router from './router/router'
 import store from './store/index'
 import http from '@/api/index'
+import utils from '@/util/index'
+
+Vue.use(utils)
 
 import { Button,Field,Cell,CellGroup,List,Skeleton,Toast,Overlay, RadioGroup, Radio, ActionSheet, DatetimePicker, Popup, Dialog, Area, PullRefresh } from 'vant'
 Vue.use(Button).use(Field).use(Cell).use(CellGroup).use(List).use(Skeleton).use(Toast).use(Overlay).use(ActionSheet).use(DatetimePicker).use(Popup).use(Dialog).use(Area)
