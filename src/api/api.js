@@ -65,6 +65,21 @@ const likeArticle = (typeId, userId, type='1', likeNum=0) => new Promise((resolv
     })
 })
 /**
+ * 文章收藏
+ * userId     {string} [require]        评论人id
+ * id         {number} [require]        文章id
+ */
+const collect = (userId, id) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/index/collect', {
+        userId,
+        id
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+/**
  * 进入详情
  * id     {number} [require]        文章id
  * page     {number} [require]        第几页
@@ -224,20 +239,125 @@ const getPublish = (userId, page, count=10) => new Promise((resolve, reject) => 
     })
 })
 
+/**
+ * 我的收藏
+ * userId     {string} [require]        userid
+ * page     {number} [require]          第几页
+ * count     {number}                   每页数量
+ */
+const getCollect = (userId, page, count=10) => new Promise((resolve, reject) => {
+    axios.get(config.serverUrl + '/index/my/getCollect', {
+        userId,
+        page,
+        count
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
 
+/**
+ * 我的关注
+ * userId     {string} [require]        userid
+ * page     {number} [require]          第几页
+ * count     {number}                   每页数量
+ */
+const getAttention = (userId, page, count=10) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/my/getAttention', {
+        userId,
+        page,
+        count
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
+/**
+ * 获取个人信息
+ * userId     {string} [require]        userid  // 我的id
+ * id     {string} [require]        id          // 查看的id
+ */
+const getUserMessage = (userId, id) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/detail/getUserMessage', {
+        userId,
+        id
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
+/**
+ * 关注他人
+ * userId     {string} [require]        评论人id
+ * id         {number} [require]        文章id
+ */
+const attention = (userId, id) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/index/attention', {
+        userId,
+        id
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
+/**
+ * 关注他人
+ * id         {number} [require]        文章id
+ */
+const letHot = (id) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/detail/letHot', {
+        id
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
+/**
+ * 更改user
+ * id         {number} [require]        我的id
+ * name         {string} [require]      更新的名称
+ * value         {string} [require]        更新的值
+ */
+const updateUser = (id, name, value) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/admin/index/updateUser', {
+        id,
+        name,
+        value
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
 
 export {
-  readArticleList,
-  publishArticle,
-  deteleArticle,
-  getDetail,
-  likeArticle,
-  publishComment,
-  publishReply,
-  delateReply,
-  likeComment,
-  register,
-  login,
-  isregister,
-  getPublish
+    readArticleList,
+    publishArticle,
+    deteleArticle,
+    getDetail,
+    likeArticle,
+    collect,
+    publishComment,
+    publishReply,
+    delateReply,
+    likeComment,
+    register,
+    login,
+    isregister,
+    getPublish,
+    getCollect,
+    getAttention,
+    getUserMessage,
+    attention,
+    letHot,
+    updateUser
 }

@@ -44,7 +44,6 @@ import config from '@/config/index'
 import {Ajax, mailReg, passwordReg} from '@/util/util'
 import areaList from '@/assets/json/area'
 import { isregister, register } from '@/api/api'
-import { UESR_MESSAGE } from "@/store/mutation-types";
 let timer = null
 export default {
 	name: 'register',
@@ -185,7 +184,7 @@ export default {
 				if(res.succeed && res.status === 200) {
 					_this.$toast('注册成功')
 					localStorage.setItem("mybook_user_msg", JSON.stringify(res.user))
-					this.$store.commit(UESR_MESSAGE, res.user)
+					this.$store.commit('user/userLogin', res.user)
 					setTimeout(()=>{
 						_this.$router.go(-1)
 					}, 1500)

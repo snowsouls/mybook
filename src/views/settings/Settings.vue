@@ -37,7 +37,6 @@ export default {
 </template>
 
 <script>
-import { UESR_LOGOUT } from '@/store/mutation-types'
 export default {
     name: "settings",
     data() {
@@ -47,7 +46,7 @@ export default {
     },
     methods: {
         logout() {
-            this.$store.commit(UESR_LOGOUT)
+            this.$store.commit('user/userLogout')
             this.$router.push({path: '/my'})
         }
     }

@@ -6,7 +6,7 @@
 					<img :src="info.user.picture" alt="图像" />
 					<div>
 						<div class="name">{{ info.user.name }}</div>
-						<div class="time">{{ info.time | transformTime }}</div>
+						<div class="time">{{ info.time | transformDate }}</div>
 					</div>
 				</div>
 			</div>
@@ -16,6 +16,21 @@
 					<span v-if="info.author || info.provenance">——</span>
 					<span>{{info.author}} </span>
 					<span>{{info.provenance}}</span>
+				</div>
+			</div>
+
+			<div class="report-box" @click="report">
+				<img class="img" src="@/assets/report.png" alt="举报">
+				<span class="text">举报/反馈</span>
+			</div>
+			<div class="main-handle">
+				<div class="handle" :class="isLike ? 'active' : 'no-active'" @click="goLikeArticle">
+					<img class="img" :src="isLike ? require('../../assets/like-active.png') : require('../../assets/like.png')" alt="赞">
+					<span>{{likeNum || '抢首赞'}}</span>
+				</div>
+				<div class="handle" :class="isHot ? 'active' : 'no-active'" @click="recommend">
+					<img class="img" src="@/assets/recommend.png" alt="荐">
+					<span>{{info.hot || '强推荐'}}</span>
 				</div>
 			</div>
 		</div>
@@ -36,7 +51,7 @@
 						<div class="handle-box">
 							<span class="time">{{item.time | transformDate}} · </span>
 							<span class="reply" @click="replyComment(item.name, item.id, index)">回复</span>
-							<span v-if="userMessage.id === item.user_id" class="reply" @click="delateComment(item.id, index)"> · 删除</span>
+							<span v-if="$user.id === item.user_id" class="reply" @click="delateComment(item.id, index)"> · 删除</span>
 						</div>
 						<div class="reply-box" v-if="item.replys && item.replys.length > 0">
 							<div v-for="(reply, replyIndex) in item.replys" :key="replyIndex">
@@ -74,8 +89,9 @@
 </template>
 
 <script>
-let comment_id = 0
-import { getDetail, publishComment, publishReply, delateReply, likeComment } from '@/api/api'
+let comment_id = 0, comment_index = 0
+import { mapState } from 'vuex'
+import { getDetail, publishComment, publishReply, delateReply, likeComment, letHot, likeArticle } from '@/api/api'
 export default {
 	name: "detail",
 	filters: {
@@ -114,11 +130,6 @@ export default {
 			}
 		}
 	},
-	computed: {
-		userMessage() {
-			return this.$store.state.userMessage
-		}
-	},
 	data() {
 		return {
 			page: 1,
@@ -127,8 +138,8 @@ export default {
 			finished: false,				// 数据全部加载完毕
 			finishedText: '没有更多了',		// 数据全部加载完毕后的提示文字
 			publishStatus: '1',				// 评论状态，1：是1级评论（评论文章的），2：是2级评论（回复1级评论），3：是回复2级评论的
-			info: '',		// 文章
-			comments: [],	// 评论
+			info: '',						// 文章
+			comments: [],					// 评论
 			content: '',
 			commentIndex: 0,				// 二级回复index
 			commentKey: 0,				// 二级回复key
@@ -136,12 +147,15 @@ export default {
 			replyId: 0,						// 三级回复 被回复的id
 			id: '',					// 三级回复 被回复的邮箱id
 			name: '',						// 三级回复 被回复的name
-			placeholder: '发表神评妙论...'	// input默认文字
+			placeholder: '发表神评妙论...',	// input默认文字
+			isHot: false,					// 是否推荐，每次进入都可以推荐
+			likeNum: 0,						// 文章点赞数
+			isLike: false,					// 是否点赞
 		}
 	},
 	methods: {
 		_getDeail(id) {
-			getDetail(id, this.page, this.count, String(this.userMessage.id)).then(res=>{
+			getDetail(id, this.page, this.count, String(this.$user.id)).then(res=>{
 				if(res.status === 200) {
 					this.info = res.data
 					this.comments = this.comments.concat(res.comment.data)
@@ -153,6 +167,39 @@ export default {
 					}
 					this.page += 1
 					this.loading = false
+				}
+			})
+		},
+		report() {
+			console.log("我是举报")
+			console.log(this.n(2))
+		},
+		goLikeArticle() {
+			if(this.$user.postbox) {
+				likeArticle(this.info.id, String(this.$user.id), this.likeNum).then(res=>{
+					if(res.status === 200) {
+						this.$toast(res.message)
+						this.isLike = res.isLike
+						this.likeNum = res.isLike ? (this.likeNum + 1) : (this.likeNum - 1)
+						this.$store.commit('article/setLike', {
+							index: comment_index,
+							likes: this.likeNum,
+							isLike: this.isLike
+						})
+					}
+				})
+			} else {
+				this.$router.push('login')
+			}
+		},
+		// 推荐
+		recommend() {
+			if(this.isHot) return
+			letHot(this.info.id).then(res=>{
+				if(res.status === 200) {
+					this.$toast(res.message)
+					this.info.hot = res.data
+					this.isHot = true
 				}
 			})
 		},
@@ -176,18 +223,18 @@ export default {
 		},
 		// 发表1级评论
 		publishContent() {
-			let user = this.$store.state.userMessage
-			if(this.userMessage.postbox) {
-				publishComment(comment_id, this.userMessage.id, this.userMessage.name, this.userMessage.picture, this.content).then(res=>{
+			if(this.$user.postbox) {
+				publishComment(comment_id, this.$user.id, this.$user.name, this.$user.picture, this.content).then(res=>{
 					if(res.status === 200) {
 						this.$toast('评论成功')
 						this.comments.unshift({
 							id: parseInt(res.succeeId),
-							picture: this.userMessage.picture,
-							name: this.userMessage.name,
+							picture: this.$user.picture,
+							name: this.$user.name,
 							content: this.content,
-							user_id: this.userMessage.id,
-							time: '刚刚'
+							user_id: this.$user.id,
+							time: '刚刚',
+							replys: []
 						})
 						this.content = ''
 					}
@@ -206,12 +253,12 @@ export default {
 		},
 		// 发表2级回复
 		publishReplys() {
-			if(this.userMessage.postbox) {
-				publishReply(this.commentId, this.userMessage.id, this.userMessage.name, this.content).then(res=>{
+			if(this.$user.postbox) {
+				publishReply(this.commentId, this.$user.id, this.$user.name, this.content).then(res=>{
 					if(res.status === 200) {
 						this.$toast('回复成功')
 						this.comments[this.commentIndex]['replys'].unshift({
-							comment_name: this.userMessage.name,
+							comment_name: this.$user.name,
 							content: this.content
 						})
 						this.content = ''
@@ -234,12 +281,12 @@ export default {
 		},
 		// 发表3级回复
 		publishReplyOthers() {
-			if(this.userMessage.postbox) {
-				publishReply(this.commentId, this.userMessage.id, this.userMessage.name, this.content, this.replyId, this.id, this.name).then(res=>{
+			if(this.$user.postbox) {
+				publishReply(this.commentId, this.$user.id, this.$user.name, this.content, this.replyId, this.id, this.name).then(res=>{
 					if(res.status === 200) {
 						this.$toast('回复成功')
 						this.comments[this.commentIndex]['replys'].unshift({
-							comment_name: this.userMessage.name,
+							comment_name: this.$user.name,
 							content: this.content,
 							reply_name: this.name
 						})
@@ -252,8 +299,8 @@ export default {
 		},
 		// 评论点赞
 		giveLike(item, index) {
-			if(this.userMessage.postbox) {
-				likeComment(item.id, String(this.userMessage.id), item.likes || 0).then(res=>{
+			if(this.$user.postbox) {
+				likeComment(item.id, String(this.$user.id), item.likes || 0).then(res=>{
 					if(res.status === 200) {
 						this.$toast(res.message)
 						item.likes = res.isLike ? (item.likes + 1) : (item.likes - 1)
@@ -264,6 +311,7 @@ export default {
 				this.$router.push('login')
 			}
 		},
+		// 删除评论
 		delateComment(id, index) {
 			this.$dialog.confirm({
 					title: '提示',
@@ -285,6 +333,9 @@ export default {
 	},
 	created() {
 		comment_id = this.$route.query.id
+		comment_index = this.$route.query.index
+		this.likeNum = this.$store.state.article.articleList[comment_index].likes
+		this.isLike = this.$store.state.article.articleList[comment_index].isLike
 		this._getDeail(comment_id)
 	}
 }
@@ -337,6 +388,69 @@ export default {
 			.author {
 				text-align: right;
 				padding-right: 30px;
+			}
+		}
+		.report-box {
+			height: 32px;
+			line-height: 32px;
+			text-align: right;
+			.img {
+				width: 16px;
+				height: 16px;
+				vertical-align: middle;
+			}
+			.text {
+				color: #999;
+				font-size: 12px;
+				vertical-align: middle;
+			}
+		}
+		.main-handle {
+			display: flex;
+			justify-content: space-around;
+			height: 40px;
+			vertical-align: top;
+			.handle {
+				width: 80px;
+				height: 32px;
+				line-height: 32px;
+				text-align: center;
+				color: #999;
+				font-size: 14px;
+				position: relative;
+				&:before {
+					content: " ";
+					width: 160px;
+					height: 64px;
+				    box-sizing: border-box;
+				    border-width: 1px;
+				    border-style: solid;
+					// border: 1px solid #ccc;
+					border-radius: 32px;
+					position: absolute;
+					top: 0;
+					left: 0;
+				    transform-origin: 0 0;
+					transform: scale(0.5);
+				}
+				&.active {
+					color: #ed4256;
+					&:before {
+						border-color: #ed4256;
+					}
+				}
+				&.no-active {
+					color: #999;
+					&:before {
+						border-color: #ccc;
+					}
+				}
+				.img {
+					width: 16px;
+					height: 16px;
+					vertical-align: middle;
+					margin-right: 4px;
+				}
 			}
 		}
 	}

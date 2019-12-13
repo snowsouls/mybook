@@ -1,3 +1,8 @@
+
+// 初始
+
+// 简介的store
+
 import Vue from 'vue'
 import Vuex from 'vuex'
 

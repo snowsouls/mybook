@@ -5,17 +5,7 @@
 	            <li class="li-box" v-for="(item, index) in lists" :key="item && item.id" @click="goDetail(item.id)">
 	            	<van-swipe-cell>
 	            		<div class="article-box">
-				            <div class="article" :class="(item.author || item.provenance) ? 'one' : 'two'">{{item.article}}</div>
-				            <div class="author" v-if="item.author || item.provenance">
-								<span class="line">——</span>
-								<span>{{item.author}} </span>
-								<span>{{item.provenance}}</span>
-							</div>
-			            	<div class="describe">
-			            		<span>{{item.name}}</span>
-			            		<span class="text"> 发表于 </span>
-			            		<span>{{item.time | transformDate}}</span>
-			            	</div>
+				            {{item.name}}
 	            		</div>
 		            	<template slot="right">
 							<van-button square type="danger" text="删除" @click="deleteCollect(item.id, index)" />
@@ -32,7 +22,7 @@
 </template>
 
 <script>
-import { collect, getCollect } from '@/api/api'
+import { collect, getCollect, getAttention } from '@/api/api'
 export default {
 	name: 'settings',
 	filters: {
@@ -103,7 +93,7 @@ export default {
 			})
         },
         initCollect(page, count=10) {
-        	getCollect(this.$user.id, page, count).then(res=> {
+        	getAttention(this.$user.id, page, count).then(res=> {
         		if(res.status === 200) {
         			this.lists = this.lists.concat(res.data)
         			this.page ++

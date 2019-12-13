@@ -113,21 +113,39 @@ export default new Router({
             }
         },
         {
+            path: '/people',
+            name: 'people',
+            component: ()=> import('@/views/detail/People'),
+            meta: {
+                title: '个人主页',
+                keepAlive: false // 需要被缓存
+            }
+        },
+        {
             path: '/collect',
             name: 'collect',
             component: ()=> import('@/views/my/Collect'),
             meta: {
                 title: '我的收藏',
-                keepAlive: true // 需要被缓存
+                keepAlive: false // 需要被缓存
             }
         },
-         {
+        {
             path: '/publish',
             name: 'publish',
             component: ()=> import('@/views/my/Publish'),
             meta: {
                 title: '我的文章',
                 keepAlive: true // 需要被缓存
+            }
+        },
+        {
+            path: '/attention',
+            name: 'attention',
+            component: ()=> import('@/views/my/Attention'),
+            meta: {
+                title: '我的关注',
+                keepAlive: false // 需要被缓存
             }
         },
         {

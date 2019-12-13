@@ -22,7 +22,7 @@
     		<img src="@/assets/article.png" alt="文章" />
     		<span class="title">我的文章</span>
     	</router-link>
-    	<router-link class="basic-style enshrine" :to="login ? 'information' : 'login'">
+    	<router-link class="basic-style enshrine" :to="login ? 'attention' : 'login'">
     		<img src="@/assets/attention.png" alt="关注" />
     		<span class="title no-border">我的关注</span>
     	</router-link>
@@ -38,7 +38,7 @@
 export default {
 	computed: {
 		infor() {
-			return this.$store.state.userMessage
+			return this.$store.state.user.userMessage
 		},
 		login() {
 			return this.infor.postbox ? true : false

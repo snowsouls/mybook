@@ -32,14 +32,25 @@ export default {
     },
     methods: {
         publish() {
-            let postbox = this.$store.state.userMessage
-            if(postbox.postbox) {
+            if(this.$user.postbox) {
                 if(this.message.trim() === '') return
                 let timer = setTimeout(()=>{
                     this.loading = true
                 },1000)
-                publishArticle(postbox.id, this.message,this.author,this.provenance).then(res=>{
-                    if(res.succee) {
+                publishArticle(this.$user.id, this.message,this.author,this.provenance).then(res=>{
+                    if(res.status === 200) {
+                        this.$store.commit('article/addArticle', {
+                            id: res.id,
+                            article: this.message,
+                            author: this.author,
+                            commnum: 0,
+                            isCollect: false,
+                            isLike: false,
+                            likes: 0,
+                            provenance: this.provenance,
+                            time: "刚刚",
+                            user: this.$user
+                        })
                         this.message = ''
                         this.author = ''
                         this.provenance = ''
@@ -50,13 +61,8 @@ export default {
                             duration: 2000
                         })
                         setTimeout(()=>{
-                            this.$router.push({
-                                name: 'home',
-                                params: {
-                                    refresh: 1
-                                }
-                            })
-                        },2000)
+                            this.$router.push('home')
+                        }, 1500)
                     }
                 })    
             } else {

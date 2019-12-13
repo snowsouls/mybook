@@ -32,7 +32,6 @@
 <script>
 import { mailReg, passwordReg } from '@/util/util'
 import { login } from '@/api/api'
-import { UESR_MESSAGE } from "@/store/mutation-types";
 export default {
 	name: 'login',
 	watch: {
@@ -92,21 +91,16 @@ export default {
 			console.log("忘记密码")
 		},
 		submit() {
-			login(this.postbox.value, this.password.value).then(res=>{
-				if(res.status === 200) {
-					console.log(res)
-					this.$toast({
-                        message: '登录成功',
-                        duration: 1500
-                    })
-                    localStorage.setItem("mybook_user_msg", JSON.stringify(res.user))
-					this.$store.commit(UESR_MESSAGE, res.user)
-					setTimeout(()=>{
-						this.$router.replace({path: '/my'})
-					}, 1500)
-				} else {
-					this.$toast(res.message)
-				}
+			this.$store.dispatch('user/submitLogin', {
+				postbox: this.postbox.value,
+				password: this.password.value
+			}).then(res=>{
+				this.$toast('登录成功')
+				setTimeout(()=>{
+					this.$router.replace({path: '/my'})
+				}, 1500)
+			}).catch(err=>{
+				this.$toast(err.message)
 			})
 		}
 	}

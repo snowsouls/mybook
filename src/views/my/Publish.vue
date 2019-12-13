@@ -3,9 +3,9 @@
 		<div class="background">
 			<img src="@/assets/show.jpg" class="bj">
 			<div class="picture-box">
-				<img class="picture" :src="userMessage.picture" alt="图像">
+				<img class="picture" :src="$user.picture" alt="图像">
 			</div>
-			<div class="name">{{userMessage.name}}</div>
+			<div class="name">{{$user.name}}</div>
 		</div>
 		<van-list v-model="loading"	:finished="finished" :immediate-check="false" :finished-text="finishedText"	@load="onLoad">
 	        <transition-group appear tag="ul">
@@ -31,11 +31,6 @@
 import { getPublish } from '@/api/api'
 export default {
 	name: 'settings',
-	computed: {
-		userMessage() {
-			return this.$store.state.userMessage
-		}
-	},
 	data() {
 		return {
 			lists: [],
@@ -51,13 +46,20 @@ export default {
 		},
 		goDetail(id) {
 			this.$router.push({path: `detail?id=${id}`})
+			// this.$router.push({
+			// 	name:'detail',
+			// 	query:{
+			// 		index,
+			// 		id
+			// 	}
+			// })
 		},
         del(id, index){
             this.$dialog.confirm({
 					title: '删除文章',
 					message: '删除文章后，首页列表中也将同步删除。您确定不让小伙伴看见吗？'
 				}).then(() => {
-					deteleArticle(this.userMessage.postbox, id).then(res=>{
+					deteleArticle(this.$user.postbox, id).then(res=>{
 						if(res.status === 200) {
 							this.$toast(res.message)
 							this.lists.splice(index, 1)
@@ -71,7 +73,7 @@ export default {
 			});
         },
         initPublish(page, count=10) {
-        	getPublish(this.userMessage.id, page, count).then(res=> {
+        	getPublish(this.$user.id, page, count).then(res=> {
         		if(res.status === 200) {
         			this.lists = this.lists.concat(res.data.data)
         			this.page ++

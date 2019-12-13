@@ -2,14 +2,14 @@
 	<div class="main">
 		<van-cell-group>
 			<van-cell title="头像" center is-link to="/information/picture" class="picture-box">
-				<img class="picture" :src="msg.picture || '@/assets/default_1.jpg'" alt="默认图" />
+				<img class="picture" :src="$user.picture || '@/assets/default_1.jpg'" alt="默认图" />
 			</van-cell>
-			<van-cell title="昵称" :value="msg.name" is-link :clickable="false" to="/information/message?param=name"/>
-			<van-cell title="账号" :value="msg.postbox" />
-			<van-cell title="性别" :value="getGender(msg.gender)" is-link :clickable="false" to="/information/message?param=gender"/>
-			<van-cell title="地区" :value="getArea(msg.area)" is-link :clickable="false" to="/information/message?param=area"/>
-			<van-cell title="出生年月" :value="msg.birth === '0000-00-00' ? '未填写' : msg.birth" is-link :clickable="false" to="/information/message?param=birth"/>
-			<van-cell title="个性签名" center :value="msg.signature || '未填写'" is-link :clickable="false" to="/information/message?param=signature"/>
+			<van-cell title="昵称" :value="$user.name" is-link :clickable="false" to="/information/message?param=name"/>
+			<van-cell title="账号" :value="$user.postbox" />
+			<van-cell title="性别" :value="getGender($user.gender)" is-link :clickable="false" to="/information/message?param=gender"/>
+			<van-cell title="地区" :value="getArea($user.area)" is-link :clickable="false" to="/information/message?param=area"/>
+			<van-cell title="出生年月" :value="$user.birth === '0000-00-00' ? '未填写' : $user.birth" is-link :clickable="false" to="/information/message?param=birth"/>
+			<van-cell title="个性签名" center :value="$user.signature || '未填写'" is-link :clickable="false" to="/information/message?param=signature"/>
 		</van-cell-group>
 	</div>
 </template>
@@ -18,20 +18,9 @@
 import areaList from '@/assets/json/area'
 export default {
 	name: 'information',
-	computed: {
-		msg() {
-			return this.$store.state.userMessage
-		}
-	},
 	data() {
 		return {
-			person: {
-				name: 'LoveT',
-				gender: '0',
-				area: '湖北省-十堰市-郧阳区',
-				birth: '1992-9-3',
-				signature: '所谓的礼物啊，比起收到礼物的人，送礼物的人更加幸福'
-			}
+			
 		}
 	},
 	methods: {
@@ -70,8 +59,7 @@ export default {
 		}
 	},
 	created() {
-		this.person = this.$store.state.userMessage
-		if(!this.person.postbox) {
+		if(!this.$user.postbox) {
 			this.$router.replace('my')
 		}
 	}

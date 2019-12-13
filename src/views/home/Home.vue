@@ -7,35 +7,33 @@
 						<div class="box" v-for="(item,index) in articleList" :key="index">
 							<div class="title">
 								<div class="left">
-									<img :src="item.user.picture" alt="图像" />
+									<img :src="item.user.picture" alt="图像" @click="goPeople(item.user_id)"/>
 									<div>
 										<div class="name">{{ item.user.name }}</div>
-										<div class="time">{{ item.time | transformTime }}</div>
+										<div class="time">{{ item.time | transformDate }}</div>
 									</div>
 								</div>
 							</div>
-							<div class="content" :class="item.longClick && 'longClick'" @touchstart="gotouchstart($event, item, index)" @touchmove="gotouchmove" @touchend="gotouchend(item.id)">
+							<div class="content" :class="(articleIndex === index && handleDialog) && 'longClick'" @touchstart="gotouchstart($event, item, index)" @touchmove="gotouchmove" @touchend="gotouchend(item.id, index)">
 								<div v-html="item.article"></div>
-								<div class="author">
-									<span v-if="item.author || item.provenance">——</span>
+								<div class="author" v-if="item.author || item.provenance">
+									<span>——</span>
 									<span>{{item.author}} </span>
 									<span>{{item.provenance}}</span>
 								</div>
 								
 							</div>
 							<div class="like-box">
-								<div class="like" @click="goLikeArticle(item.id, item)">
-									<!-- <img :src="item.isLike ? '../../assets/like-active.png' : '../../assets/like.png'"> -->
-									<img v-if="item.isLike" src="@/assets/like-active.png">
-									<img v-else src="@/assets/like.png">
-									<span>{{ item.likes || '点赞' }}</span>
+								<div class="like" @click="goLikeArticle(item, index)">
+									<img :src="item.isLike ? require('../../assets/like-active.png') : require('../../assets/like.png')">
+									<span :class="item.isLike && 'red'">{{ item.likes || '点赞' }}</span>
 								</div>
-								<div class="comment" @click="commentCotent(item.id)">
+								<div class="comment" @click="commentCotent(item.id, index)">
 									<img src="@/assets/comment.png">
 									<span>{{ item.commnum || '评论' }}</span>
 								</div>
-								<div class="like">
-									<img src="@/assets/collect.png">
+								<div class="like" @click="goCollect(item.id, index)">
+									<img :src="item.isCollect ? require('../../assets/collect-active.png') : require('../../assets/collect.png')">
 								</div>
 							</div>
 						</div>
@@ -49,11 +47,11 @@
 				<van-skeleton title avatar :row="3" :loading="initLoading"></van-skeleton>
 			</div>
 		</van-pull-refresh>
-		<div class="handleDialog" v-show="handleDialog" @touchstart.stop="hiddenDialog">
+		<div class="handleDialog" v-show="handleDialog" @touchstart.stop="handleDialog = false">
 			<div class="handle-box" :class="{bottom: triangle}" :style="{top: handleTop + 'px'}">
-				<div class="handle left" @touchstart.stop="commentCotent">评论</div>
+				<div class="handle left" @touchstart.stop="commentCotent()">评论</div>
 				<div class="handle">举报</div>
-				<div class="handle" v-if="userMessage.postbox === user.postbox || userMessage.authority === '1' || userMessage.authority === '2'" @touchstart.stop="delateArticle">删除</div>
+				<div class="handle" v-if="$user.postbox === user.postbox || $user.authority === '1' || $user.authority === '2'" @touchstart.stop="delateArticle">删除</div>
 				<div class="handle right" @touchstart.stop="copyCotent">复制</div>
 			</div>
 		</div>
@@ -66,15 +64,16 @@
 
 <script>
 import GoTop from '@/components/goTop'
-import { readArticleList, deteleArticle, likeArticle } from '@/api/api'
-let timeOutEvent = null, activeIndex = 0
+import { mapState } from 'vuex'
+import { readArticleList, deteleArticle, likeArticle, collect } from '@/api/api'
+let timeOutEvent = null
 export default {
 	name: 'home',
 	components: { GoTop },
 	computed: {
-		userMessage() {
-			return this.$store.state.userMessage
-		}
+		...mapState({
+			articleList: state=> state.article.articleList
+		})
 	},
 	data() {
 		return {
@@ -89,32 +88,44 @@ export default {
 			handleDialog: false,	// 操作页是否显示
 			handleTop: 0,			// 操作页位置
 			triangle: false,		// 操作框小三角的位置，默认在下面
-			articleList: [],
-			isleave: true			// bug：快速离开再进入home，goTop会立即出现再消除
+			isleave: true,			// bug：快速离开再进入home，goTop会立即出现再消除
+			articleIndex: -1,
 		}
 	},
 	filters: {
-		transformTime(time) {
-			let newT = ''
-			if(time.indexOf(' ') !== -1) {
-				newT = time.slice(0, -3)
+		transformDate(time) {
+			let timeMinus = parseInt(Date.now()/1000) - parseInt(new Date(time).getTime()/1000)
+			if(timeMinus < 60) {
+				return '刚刚'
+			} else if (timeMinus < 120) {
+				return '一分钟前'
+			} else if (timeMinus < 600) {
+				return '十分钟前'
+			} else if (timeMinus < 3600) {
+				return '1小时前'
+			} else if (timeMinus < 86400) {
+				var num = Math.floor(timeMinus/3600)
+				return `${num}小时前`
+			} else if (timeMinus < 2592000) {
+				var num = Math.floor(timeMinus/86400)
+				return `${num}天前`
 			} else {
-				newT = time
+				let data = time.split(" ")[0].split("-")
+				if(new Date().getYear() === data[0]) {
+					return `${data[1]}-${data[2]}`		// 不带年份
+				} else {
+					return time.split(" ")[0]		// 带年份
+				}
 			}
-			return newT
 		}
 	},
 	methods: {
 		_readArticleList(page, count=10) {		// 以后每次加载10条
-			readArticleList(count, page, this.userMessage.id).then(res=>{
-				res.data.forEach(item=>{
-					// item.user.picture = item.user.picture.replace(/www\.mybook\.com/g, '192.168.1.94/tp5')	// 本地测试使用
-					item.longClick = false
-				})
-				if(res.data.length < count) {
-					this.finished = true
-				}
-				this.articleList = this.articleList.concat(res.data)
+			this.$store.dispatch('article/setArticle', {
+				page,
+				count
+			}).then(flag=>{
+				this.finished = !flag
 				this.page += 1
 				this.loading = false
 				this.initLoading = false
@@ -124,7 +135,8 @@ export default {
 			this._readArticleList(this.page)
 		},
 		onRefresh() {
-			this._readArticleList(1)
+			console.log(this.articleList)
+			// this._readArticleList(1)
 			setTimeout(() => {
 				this.$toast('刷新成功')
 				this.isLoading = false
@@ -145,18 +157,24 @@ export default {
 					this.triangle = false
 					this.handleTop = 300
 				}
-				activeIndex = index
-				this.articleList[activeIndex].longClick = true
+				this.articleIndex = index
 				this.handleDialog = true
 				clearTimeout(timeOutEvent)
 				timeOutEvent = null
 			},600);//这里设置定时
 		},
 		//手释放，如果在500毫秒内就释放，则取消长按事件，此时可以执行onclick应该执行的事件
-		gotouchend(id){
+		gotouchend(id, index){
 			if(timeOutEvent){
 				//这里写要执行的内容,如onclick事件
-				this.$router.push({path: `detail?id=${id}`})
+				// this.$router.push({path: `detail?id=${id}`})
+				this.$router.push({
+					name:'detail',
+					query:{
+						index,
+						id
+					}
+				})
 			}
 			clearTimeout(timeOutEvent)
 			timeOutEvent = null
@@ -166,34 +184,40 @@ export default {
 			clearTimeout(timeOutEvent);//清除定时器
 			timeOutEvent = null
 		},
-		hiddenDialog() {
-			this.articleList[activeIndex].longClick = false
-			this.handleDialog = false
-		},
 		// 复制
 		copyCotent() {
 			clearTimeout(timeOutEvent)
-			this.hiddenDialog()
+			this.handleDialog = false
 			//执行长按要执行的内容，
-			this.$refs.copybox.value = (this.articleList[activeIndex].article)
+			this.$refs.copybox.value = (this.articleList[this.articleIndex].article)
 			this.$refs.copybox.select()
 			document.execCommand("Copy")
 			this.$toast("已复制到剪贴板")
 			
 			// var clipboard = new Clipboard('#copybox');'\r'
 		},
-		commentCotent(id) {
-			this.hiddenDialog()
-			this.$router.push({path: `detail?id=${id || this.articleList[activeIndex].id}`})
+		// 去评论
+		commentCotent(id, index) {
+			this.handleDialog = false
+			this.$router.push({
+				name:'detail',
+				query:{
+					index: (index !== undefined ? index : this.articleIndex),
+					id: (id !== undefined ? id : this.articleList[this.articleIndex].id)
+				}
+			})
 		},
-		goLikeArticle(id, item) {
-			let user = this.userMessage
-			if(user.postbox) {
-				likeArticle(id, String(user.id), item.likes || 0).then(res=>{
+		// 点赞
+		goLikeArticle(item, index) {
+			if(this.$user.postbox) {
+				likeArticle(item.id, String(this.$user.id), item.likes || 0).then(res=>{
 					if(res.status === 200) {
 						this.$toast(res.message)
-						item.likes = res.isLike ? (item.likes + 1) : (item.likes - 1)
-						item.isLike = res.isLike
+						this.$store.commit('article/setLike', {
+							index,
+							likes: res.isLike ? (item.likes + 1) : (item.likes - 1),
+							isLike: res.isLike
+						})
 					}
 				})
 			} else {
@@ -202,30 +226,48 @@ export default {
 		},
 		// 删除
 		delateArticle() {
-			this.hiddenDialog()
+			this.handleDialog = false
 			this.$dialog.confirm({
 					title: '提示',
 					message: '确认删除此文章？'
 				}).then(() => {
-					deteleArticle(this.userMessage.postbox, this.id).then(res=>{
+					deteleArticle(this.$user.postbox, this.id).then(res=>{
 						if(res.status === 200) {
 							this.$toast(res.message)
-							this.articleList.splice(activeIndex, 1)
+							// this.articleList.splice(articleIndex, 1)
+							this.$store.commit('article/delateArticle', this.articleIndex)
 							if(this.articleList.length < 10) {
 								this.onLoad()
 							}
 						} else {
 							this.$toast(res.error)
 						}
-						
 					})
 				}).catch(() => {
 					// on cancel
 			});
+		},
+		// 收藏
+		goCollect(id, index) {
+			collect(this.$user.id, id).then(res=>{
+				if(res.status === 200) {
+					this.$toast(res.message)
+					this.$store.commit('article/setCollect', {
+						index,
+						flag: res.isCollect
+					})
+				} else {
+					this.$toast(res.error)
+				}
+			})
+		},
+		goPeople(id) {
+			if(this.$user.id === id) return
+			this.$router.push({path: `people?id=${id}`})
 		}
 	},
 	created() {
-		this._readArticleList(this.page, this.count)	// 第一次加载20条
+		this._readArticleList(this.page, 20)	// 第一次加载20条
 		this.$nextTick(()=> {
 			document.documentElement.scrollTop = this.homeTop
 		})
@@ -330,6 +372,9 @@ export default {
 						color: #666;
 						margin-left: 4px;
 						vertical-align: middle;
+						&.red {
+							color: #ed4256;
+						}
 					}
 				}
 			}

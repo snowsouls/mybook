@@ -1,3 +1,4 @@
+const path = require("path");
 // 这里只列一部分，具体配置惨考文档啊
 module.exports = {
     // baseUrl  type:{string} default:'/' 
@@ -7,6 +8,17 @@ module.exports = {
     // https://www.my-app.com/。如果应用程序部署在子路径上，则需要使用此选项指定子路径。例如，如果您的应用程序部署在https://www.foobar.com/my-app/，集baseUrl到'/my-app/'.
 
     publicPath: process.env.NODE_ENV === 'production' ? '/mybook/' : '/',
+
+    // npm i style-resources-loader -D
+    // npm i vue-cli-plugin-style-resources-loader -D
+    // npm i style-resources-loader vue-cli-plugin-style-resources-loader -D
+    //设置全局less文件
+    pluginOptions: {
+        'style-resources-loader': {
+            preProcessor: 'less',
+            patterns: [path.resolve(__dirname, "./src/less/base.less")] // 引入全局样式变量
+        }
+    },
 
     // outputDir: 在npm run build时 生成文件的目录 type:string, default:'dist'
 

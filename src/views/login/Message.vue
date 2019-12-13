@@ -63,7 +63,7 @@
 
 <script>
 import areaList from '@/assets/json/area'
-import { UESR_MESSAGE } from '@/store/mutation-types'
+import { updateUser } from '@/api/api'
 export default {
 	name: 'message',
 	computed: {
@@ -79,7 +79,7 @@ export default {
 	},
 	watch: {
 		value(newV) {
-			if(newV === '未填写' || newV === this.$store.state.userMessage[this.flag] || (this.flag === 'name' && newV === '')) {
+			if(newV === '未填写' || newV === this.$user[this.flag] || (this.flag === 'name' && newV === '')) {
 				this.disabled = true
 			} else {
 				this.disabled = false
@@ -99,12 +99,27 @@ export default {
 	},
 	methods: {
 		changeMsg() {
-			if(this.flag === 'area') {
-				this.$store.state.userMessage[this.flag] = this.areaCode
-			} else {
-				this.$store.state.userMessage[this.flag] = this.value
-			}
-			this.$store.commit(UESR_MESSAGE)
+			let value = this.flag === 'area' ? this.areaCode : this.value
+			updateUser(this.$user.id, this.flag, value).then(res=>{
+				if(res.status === 200) {
+					console.log(value)
+					this.$store.commit('user/updateUser', {
+						name: this.flag,
+						value: value
+					})
+				}
+			})
+			// if(this.flag === 'area') {
+			// 	this.$store.commit('user/updateUser', {
+			// 		name: 'area',
+			// 		value: this.areaCode
+			// 	})
+			// } else {
+			// 	this.$store.commit('user/updateUser', {
+			// 		name: this.flag,
+			// 		value: this.value
+			// 	})
+			// }
 			this.$router.history.go(-1)
 		},
 		choseArea(value) {
@@ -132,14 +147,14 @@ export default {
 		_initMsg() {
 			switch(this.flag) {
 				case 'name':
-					this.value = this.$store.state.userMessage['name']
+					this.value = this.$user['name']
 					this.onInputFocus()
 					break;
 				case 'gender':
-					this.value = this.$store.state.userMessage["gender"]
+					this.value = this.$user["gender"]
 					break;
 				case 'area':
-					let areaCode = this.areaCode = this.$store.state.userMessage.area
+					let areaCode = this.areaCode = this.$user.area
 					if(areaCode) {
 						let province = areaCode.replace(/\d{4}$/g, '0000')
 						if(/^9/.test(province)) {
@@ -153,14 +168,14 @@ export default {
 					}
 					break;
 				case 'birth':
-					let time = this.$store.state.userMessage.birth
+					let time = this.$user.birth
 					this.value = time === '0000-00-00' ? '未填写' : time
 					let date = (time && time !== '0000-00-00') ? time : this._formatDate(new Date())
 					this.currentDate = new Date(Date.parse(date.replace(/-/g, "/")))
 					break;
 				case 'name':
 				case 'signature':
-					this.value = this.$store.state.userMessage[this.flag]
+					this.value = this.$user[this.flag]
 					break;
 				default:
 					this.$router.replace({
@@ -172,14 +187,14 @@ export default {
 	created() {
 		this.flag = this.$route.query.param
 		// if(this.flag !== 'area') {
-		// 	this.value = this.$store.state.userMessage[this.flag]
+		// 	this.value = this.$user[this.flag]
 		// }
 		// if(this.flag === 'name') {
 		// 	this.onInputFocus()
 		// }
 		// if(this.flag === 'area') {
-		// 	this.areaCode = this.$store.state.userMessage.area
-		// 	let areaCode = this.$store.state.userMessage.area
+		// 	this.areaCode = this.$user.area
+		// 	let areaCode = this.$user.area
 		// 	if(areaCode) {
 		// 		let province = areaCode.replace(/\d{4}$/g, '0000')
 		// 		if(/^9/.test(province)) {
@@ -193,7 +208,7 @@ export default {
 		// 	}
 		// }
 		// if(this.flag === 'birth') {
-		// 	let time = this.$store.state.userMessage.birth
+		// 	let time = this.$user.birth
 		// 	this.value = time === '0000-00-00' ? '未填写' : time
 		// 	let date = (time && time !== '0000-00-00') ? time : this._formatDate(new Date())
 		// 	this.currentDate = new Date(Date.parse(date.replace(/-/g, "/")))
