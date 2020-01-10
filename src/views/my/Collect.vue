@@ -85,7 +85,15 @@ export default {
 			this.initCollect(this.page)
 		},
 		goDetail(id) {
-			this.$router.push({path: `detail?id=${id}`})
+			let key = -1
+			this.$store.state.article.articleList.forEach((item, index) => {
+				if(item.id === id) key = index
+			})
+			if(key === -1) {
+				this.$router.push({path: `detail?id=${id}`})
+			} else {
+				this.$router.push({path: `detail?id=${id}&index=${key}`})
+			}
 		},
         deleteCollect(id, index){
             collect(this.$user.id, id).then(res=>{
@@ -180,27 +188,27 @@ export default {
 	}
 }
 
-.v-enter {
-	transform: translateY(100%);
-}
-.v-leave-to{
-	z-index: -99;
-    opacity: 0;
-}
-.v-enter-active {
-	opacity: 0;
-    transition: transform .5s ease;
-}
+// .v-enter {
+// 	transform: translateY(100%);
+// }
+// .v-leave-to{
+// 	z-index: -99;
+//     opacity: 0;
+// }
+// .v-enter-active {
+// 	opacity: 0;
+//     transition: transform .5s ease;
+// }
 
-.v-leave-active {
-	opacity: 0;
-    transition: transform 1s ease;
-}
+// .v-leave-active {
+// 	opacity: 0;
+//     transition: transform 1s ease;
+// }
 
-.v-move{
-   transition: all 1s ease;
-}
-.v-leave-active{
-    position: absolute;
-}
+// .v-move{
+//    transition: all 1s ease;
+// }
+// .v-leave-active{
+//     position: absolute;
+// }
 </style>

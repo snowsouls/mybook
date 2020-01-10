@@ -13,7 +13,10 @@ const actions = {
 					// item.user.picture = item.user.picture.replace(/www\.mybook\.com/g, '192.168.1.94/tp5')	// 本地测试使用
 					// item.longClick = false
 				})
-				commit('setArticle', res.data)
+				commit('setArticle', {
+					data: res.data,
+					refresh: obj.refresh
+				})
                 resolve(res.has_more)
     		}).catch(err=> {
     			reject(err)

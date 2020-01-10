@@ -3,9 +3,9 @@
         <div class="title">择一语，动人心</div>
         <div class="article">
             <van-cell-group>
-                <van-field v-model="message" autosize rows="5" type="textarea" placeholder="那些感动我们的美好……" />
-                <van-field v-model="author" placeholder="作者" />
-                <van-field v-model="provenance" placeholder="出处" />
+                <van-field v-model.trim="message" autosize rows="5" type="textarea" placeholder="那些感动我们的美好……" />
+                <van-field v-model.trim="author" placeholder="作者" />
+                <van-field v-model.trim="provenance" placeholder="出处" />
             </van-cell-group>
         </div>
 
@@ -37,11 +37,19 @@ export default {
                 let timer = setTimeout(()=>{
                     this.loading = true
                 },1000)
+                if(this.provenance) {
+                    if(!new RegExp("^《.*$").test(this.provenance)) {
+                        this.provenance = '《' + this.provenance
+                    }
+                    if(!new RegExp("^.*》$").test(this.provenance)) {
+                        this.provenance = this.provenance + '》'
+                    }
+                }
                 publishArticle(this.$user.id, this.message,this.author,this.provenance).then(res=>{
                     if(res.status === 200) {
                         this.$store.commit('article/addArticle', {
                             id: res.id,
-                            article: this.message,
+                            article: this.message.replace(/\n/g,'<br />'),
                             author: this.author,
                             commnum: 0,
                             isCollect: false,
@@ -79,6 +87,9 @@ export default {
         .title {
             height: 30px;
             line-height: 30px;
+        }
+        .article {
+            margin-bottom: 20px;
         }
         /deep/ .van-cell {
             background-color: #fafafa;

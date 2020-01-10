@@ -69,17 +69,30 @@
 					<div class="chose" :class="choseIndex === index && 'active'" v-for="(item, index) in choseArr" @click="lookMsg(index)">{{item}}</div>
 				</div>
 			</van-sticky>
-			<div v-for="num in 100">
-				<li style="height: 32px">{{num}}</li>
-			</div>
+			
+			<van-list v-model="loading"	:finished="finished" :immediate-check="false" :finished-text="finishedText"	@load="onLoad">
+	            <li class="article-box" v-for="(item, index) in lists" :key="item.id" @click="goDetail(item.id)">
+		            <div class="article">{{item.article}}</div>
+	            	<div class="handle-box">
+	            		<div class="handle">
+	            			<span class="time">{{item.time}}</span>
+	            			<img class="img" src="@/assets/like.png" alt="赞">
+	            			<span>{{item.likes || 0}}</span>
+	            			<img class="img" src="@/assets/comment.png" alt="评论">
+	            			<span>{{item.commnum}}</span>
+	            		</div>
+	            	</div>
+	            </li>
+		    </van-list>
+
 			<van-image-preview v-model="imgShow" :images="imgArr" :showIndex="false" />
 		</div>
 	</div>
 </template>
 
 <script>
-let comment_id = 0
-import { getUserMessage, attention } from '@/api/api'
+let user_id = 0
+import { getUserMessage, getPublish, attention } from '@/api/api'
 export default {
 	name: "detail",
 	computed: {
@@ -99,16 +112,28 @@ export default {
 			hiddenLine: false,		// 选项卡吸顶
 			choseArr: ['文章','点赞','收藏'],
 			choseIndex: 0,
-			isLoading: false
+			page: 1,
+			isLoading: false,
+			lists: [],
+			loading: false,					// 数据加载完成
+			finished: false,				// 数据全部加载完毕
+			finishedText: '没有更多了',		// 数据全部加载完毕后的提示文字
 		}
 	},
 	methods: {
 		_getInfo(id) {
-			getUserMessage(this.$user.id, id).then(res=>{
-				if(res.status === 200) {
-					this.userInfo = res.data
-					this.isAttention = res.isAttention
+			Promise.all([getUserMessage(this.$user.id, id), getPublish(id, this.page)]).then(res=>{
+				if(res[0].status === 200 && res[1].status === 200) {
+					this.userInfo = res[0].data
+					this.isAttention = res[0].isAttention
+					this.lists = res[1].data.data
+					this.page ++
 				}
+			})
+		},
+		onLoad() {
+			getPublish(user_id, this.page).then(res=>{
+				this.lists = this.lists.concat(res.data.data)
 			})
 		},
 		scroll(e) {
@@ -133,8 +158,8 @@ export default {
 		}
 	},
 	created() {
-		let id = this.$route.query.id
-		this._getInfo(id)
+		user_id = this.$route.query.id
+		this._getInfo(user_id)
 	}
 }
 </script>
@@ -349,6 +374,47 @@ export default {
 					border-bottom: 2px solid #1989fa;
 				}
 			}
+		}
+	}
+}
+.article-box {
+	padding: 8px;
+	position: relative;
+	&:after {
+		content: "";
+		position: absolute;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+		height: 0;
+		border-bottom: 1px solid #ebebeb;
+		transform: scaleY(0.5);
+		box-sizing: border-box;
+	}
+	.article {
+		color: #333;
+		font-size: 16px;
+		word-break: break-all;
+	}
+	.handle-box {
+		margin-top: 10px;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		.handle {
+			color: #999;
+			font-size: 14px;
+			.img {
+				width: 16px;
+				height: 16px;
+				margin-left: 16px;
+				margin-right: 4px;
+				vertical-align: middle;
+			}
+		}
+		.delate {
+			width: 16px;
+			height: 16px;
 		}
 	}
 }

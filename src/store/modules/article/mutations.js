@@ -4,13 +4,21 @@
  */
 const matations = {
     // 文章列表
-    setArticle(state, list) {
-    	state.articleList = state.articleList.concat(list)
+    setArticle(state, obj) {
+        if(obj.refresh) {
+            state.articleList = obj.data
+        } else {
+        	state.articleList = state.articleList.concat(obj.data)
+        }
     },
     // 文章点赞
     setLike(state, obj) {
         state.articleList[obj.index]['likes'] = obj.likes
         state.articleList[obj.index]['isLike'] = obj.isLike
+    },
+    // 文章评论
+    setComment(state, obj) {
+        state.articleList[obj.index]['commnum'] = state.articleList[obj.index]['commnum'] + obj.commnum
     },
     // 文章收藏
     setCollect(state, obj) {

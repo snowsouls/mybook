@@ -74,6 +74,7 @@ export default {
 		    actions: [
 		        { name: '小哥哥' },
 		        { name: '小姐姐' },
+		        { name: '不告诉你' }
 		    ],
 		    showBirthday: false,
 		    showArea: false,
@@ -104,7 +105,6 @@ export default {
 					this.$toast(res.message)
 				}
 			})
-			
 		},
 		_email(postbox) {
 			let _this = this
@@ -171,7 +171,7 @@ export default {
 				name: this.name,
 				postbox: this.postbox,
 				password: this.password,
-				gender: this.gender === '小哥哥' ? '0' : this.gender === '小姐姐' ? '1' : '',
+				gender: this.gender === '小哥哥' ? '0' : this.gender === '小姐姐' ? '1' : '2',
 				birth: this.birthday,
 				area: this.areaCode,
 				signature: this.signature

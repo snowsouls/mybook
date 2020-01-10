@@ -122,6 +122,15 @@ export default new Router({
             }
         },
         {
+            path: '/report',
+            name: 'report',
+            component: ()=> import('@/views/detail/Report'),
+            meta: {
+                title: '举报/反馈',
+                keepAlive: false // 需要被缓存
+            }
+        },
+        {
             path: '/collect',
             name: 'collect',
             component: ()=> import('@/views/my/Collect'),

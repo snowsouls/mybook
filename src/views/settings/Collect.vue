@@ -33,7 +33,6 @@
 					<div class="content">{{item.content}}</div>
 	        	</div>
 	        </li>
-	        <!-- <li v-for="(item, index) in items" :key="item">Item {{index}}</li> -->
 	    </transition-group>
 	</div>
 </template>
@@ -45,7 +44,6 @@ export default {
 	name: 'settings',
 	data() {
 		return {
-			items: [1,2,3,4,5,6,7,8,9],
 			page: 1,
 			count: 10,
 			loading: false,					// 数据加载完成

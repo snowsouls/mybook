@@ -7,7 +7,7 @@
 						<div class="box" v-for="(item,index) in articleList" :key="index">
 							<div class="title">
 								<div class="left">
-									<img :src="item.user.picture" alt="图像" @click="goPeople(item.user_id)"/>
+									<img :src="item.user.picture" alt="图像" @click="goPeople(item.user_id, item.user.secret)"/>
 									<div>
 										<div class="name">{{ item.user.name }}</div>
 										<div class="time">{{ item.time | transformDate }}</div>
@@ -15,10 +15,10 @@
 								</div>
 							</div>
 							<div class="content" :class="(articleIndex === index && handleDialog) && 'longClick'" @touchstart="gotouchstart($event, item, index)" @touchmove="gotouchmove" @touchend="gotouchend(item.id, index)">
-								<div v-html="item.article"></div>
+								<div class="article" v-html="item.article"></div>
 								<div class="author" v-if="item.author || item.provenance">
 									<span>——</span>
-									<span>{{item.author}} </span>
+									<span>{{item.author}}</span>
 									<span>{{item.provenance}}</span>
 								</div>
 								
@@ -50,7 +50,7 @@
 		<div class="handleDialog" v-show="handleDialog" @touchstart.stop="handleDialog = false">
 			<div class="handle-box" :class="{bottom: triangle}" :style="{top: handleTop + 'px'}">
 				<div class="handle left" @touchstart.stop="commentCotent()">评论</div>
-				<div class="handle">举报</div>
+				<div class="handle" @touchstart.stop="setReport()">举报</div>
 				<div class="handle" v-if="$user.postbox === user.postbox || $user.authority === '1' || $user.authority === '2'" @touchstart.stop="delateArticle">删除</div>
 				<div class="handle right" @touchstart.stop="copyCotent">复制</div>
 			</div>
@@ -120,27 +120,40 @@ export default {
 		}
 	},
 	methods: {
-		_readArticleList(page, count=10) {		// 以后每次加载10条
+		_readArticleList(page, count=10, refresh) {		// 以后每次加载10条
 			this.$store.dispatch('article/setArticle', {
 				page,
-				count
+				count,
+				refresh
 			}).then(flag=>{
 				this.finished = !flag
-				this.page += 1
 				this.loading = false
 				this.initLoading = false
+				if(refresh) {
+					if(refresh === true) this.$toast('刷新成功')
+					this.isLoading = false
+					this.page = 3
+				} else {
+					this.page += 1
+				}
 			})
 		},
 		onLoad() {
 			this._readArticleList(this.page)
 		},
 		onRefresh() {
-			console.log(this.articleList)
-			// this._readArticleList(1)
-			setTimeout(() => {
-				this.$toast('刷新成功')
-				this.isLoading = false
-			}, 500);
+			this._readArticleList(1, 20, true)
+		},
+		// 举报
+		setReport() {
+			let id = this.articleList[this.articleIndex].id
+			this.handleDialog = false
+			this.$router.push({
+				name:'report',
+				query:{
+					id
+				}
+			})
 		},
 		gotouchstart(event, item, index){
 			timeOutEvent = setTimeout(()=> {
@@ -261,13 +274,17 @@ export default {
 				}
 			})
 		},
-		goPeople(id) {
+		goPeople(id, secret) {
 			if(this.$user.id === id) return
-			this.$router.push({path: `people?id=${id}`})
+			if(secret || this.$user.authority !== '0') {
+				this.$router.push({path: `people?id=${id}`})
+			} else {
+				this.$toast('朋友开启了隐私，你不能查看哦')
+			}
 		}
 	},
 	created() {
-		this._readArticleList(this.page, 20)	// 第一次加载20条
+		this._readArticleList(this.page, 20, 'true')	// 第一次加载20条
 		this.$nextTick(()=> {
 			document.documentElement.scrollTop = this.homeTop
 		})
@@ -340,9 +357,13 @@ export default {
 				&.longClick {
 					background-color: #f5f5f5;
 				}
+				.article {
+					white-space: pre-line;
+				}
 				.author {
 					text-align: right;
 					padding-right: 30px;
+					font-size: 14px;
 				}
 				
 			}

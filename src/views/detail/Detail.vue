@@ -1,75 +1,77 @@
 <template>
 	<div v-if="info" class="detail">
-		<div class="main">
-			<div class="title">
-				<div class="left">
-					<img :src="info.user.picture" alt="图像" />
-					<div>
-						<div class="name">{{ info.user.name }}</div>
-						<div class="time">{{ info.time | transformDate }}</div>
+		<div @touchstart.capture="changeStatus">
+			<div class="main">
+				<div class="title">
+					<div class="left">
+						<img :src="info.user.picture" alt="图像" />
+						<div>
+							<div class="name">{{ info.user.name }}</div>
+							<div class="time">{{ info.time | transformDate }}</div>
+						</div>
 					</div>
 				</div>
-			</div>
-			<div class="address">
-				<div v-html="info.article"></div>
-				<div class="author">
-					<span v-if="info.author || info.provenance">——</span>
-					<span>{{info.author}} </span>
-					<span>{{info.provenance}}</span>
+				<div class="address">
+					<div class="article" v-html="info.article"></div>
+					<div class="author">
+						<span v-if="info.author || info.provenance">——</span>
+						<span>{{info.author}}</span>
+						<span>{{info.provenance}}</span>
+					</div>
 				</div>
-			</div>
 
-			<div class="report-box" @click="report">
-				<img class="img" src="@/assets/report.png" alt="举报">
-				<span class="text">举报/反馈</span>
-			</div>
-			<div class="main-handle">
-				<div class="handle" :class="isLike ? 'active' : 'no-active'" @click="goLikeArticle">
-					<img class="img" :src="isLike ? require('../../assets/like-active.png') : require('../../assets/like.png')" alt="赞">
-					<span>{{likeNum || '抢首赞'}}</span>
+				<div class="report-box" @click="report">
+					<img class="img" src="@/assets/report.png" alt="举报">
+					<span class="text">举报/反馈</span>
 				</div>
-				<div class="handle" :class="isHot ? 'active' : 'no-active'" @click="recommend">
-					<img class="img" src="@/assets/recommend.png" alt="荐">
-					<span>{{info.hot || '强推荐'}}</span>
-				</div>
-			</div>
-		</div>
-		<van-list v-model="loading"	:finished="finished" :immediate-check="false" :finished-text="finishedText"	@load="onLoad">
-			<transition-group name="fade" tag="ul" class="comment-box">
-				<li class="comment" v-for="(item,index) in comments" :key="item.id">
-					<img :src="item.picture" class="picture" alt="图像" />
-					<div class="right">
-						<div class="name-box">
-							<div class="name">{{item.name}}</div>
-							<div class="zan" @click="giveLike(item, index)">
-								<img v-if="item.isLike" src="@/assets/like-active.png">
-								<img v-else src="@/assets/like.png">
-								<span>{{ item.likes || '赞' }}</span>
-							</div>
-						</div>
-						<div class="content">{{item.content}}</div>
-						<div class="handle-box">
-							<span class="time">{{item.time | transformDate}} · </span>
-							<span class="reply" @click="replyComment(item.name, item.id, index)">回复</span>
-							<span v-if="$user.id === item.user_id" class="reply" @click="delateComment(item.id, index)"> · 删除</span>
-						</div>
-						<div class="reply-box" v-if="item.replys && item.replys.length > 0">
-							<div v-for="(reply, replyIndex) in item.replys" :key="replyIndex">
-								<span class="text name">{{reply.comment_name}}</span>
-								<span class="text old" v-if="reply.reply_name">回复</span>
-								<span class="text name" v-if="reply.reply_name">{{reply.reply_name}}</span>
-								<span class="text msg" @click="replyOthers(item.id, reply.id, reply.user_id, reply.comment_name, index)">：{{reply.content}}</span>
-							</div>
-						</div>
+				<div class="main-handle">
+					<div class="handle" :class="info.isLike ? 'active' : 'no-active'" @click="goLikeArticle">
+						<img class="img" :src="info.isLike ? require('../../assets/like-active.png') : require('../../assets/like.png')" alt="赞">
+						<span>{{info.likes || '抢首赞'}}</span>
 					</div>
-				</li>
-				<div v-if="comments.length === 0" class="noComment" key="noComment">
-					<img class="img" src="@/assets/noComment.png" alt="图像" />
-					<p class="text">还没有人评论，点击抢沙发~</p>
-					<van-button class="btn" color="#bfbfbf" plain>立即评论</van-button>
+					<div class="handle" :class="isHot ? 'active' : 'no-active'" @click="recommend">
+						<img class="img" src="@/assets/recommend.png" alt="荐">
+						<span>{{info.hot || '强推荐'}}</span>
+					</div>
 				</div>
-			</transition-group>
-		</van-list>
+			</div>
+			<van-list v-model="loading"	:finished="finished" :immediate-check="false" :finished-text="finishedText"	@load="onLoad">
+				<transition-group name="fade" tag="ul" class="comment-box">
+					<li class="comment" v-for="(item,index) in comments" :key="item.id">
+						<img :src="item.picture" class="picture" alt="图像" />
+						<div class="right">
+							<div class="name-box">
+								<div class="name">{{item.name}}</div>
+								<div class="zan" @click="giveLike(item, index)">
+									<img v-if="item.isLike" src="@/assets/like-active.png">
+									<img v-else src="@/assets/like.png">
+									<span>{{ item.likes || '赞' }}</span>
+								</div>
+							</div>
+							<div class="content">{{item.content}}</div>
+							<div class="handle-box">
+								<span class="time">{{item.time | transformDate}} · </span>
+								<span class="reply" @click.stop="replyComment(item.name, item.id, index)">回复</span>
+								<span v-if="$user.id === item.user_id" class="reply" @click="delateComment(item.id, index)"> · 删除</span>
+							</div>
+							<div class="reply-box" v-if="item.replys && item.replys.length > 0">
+								<div v-for="(reply, replyIndex) in item.replys" :key="replyIndex">
+									<span class="text name">{{reply.comment_name}}</span>
+									<span class="text old" v-if="reply.reply_name">回复</span>
+									<span class="text name" v-if="reply.reply_name">{{reply.reply_name}}</span>
+									<span class="text msg" @click.stop="replyOthers(item.id, reply.id, reply.user_id, reply.comment_name, index)">：{{reply.content}}</span>
+								</div>
+							</div>
+						</div>
+					</li>
+					<div v-if="comments.length === 0" class="noComment" key="noComment">
+						<img class="img" src="@/assets/noComment.png" alt="图像" />
+						<p class="text">还没有人评论，点击抢沙发~</p>
+						<van-button class="btn" color="#bfbfbf" plain>立即评论</van-button>
+					</div>
+				</transition-group>
+			</van-list>
+		</div>
 		<div class="fixed-box">
 			<!-- <input type="text" v-model="content">
 			<button @click="publishContent">发送</button> -->
@@ -81,7 +83,7 @@
 					:placeholder="placeholder"
 					@keyup.enter="publish"
 					>
-					<van-button slot="button" size="small" hairline type="primary" @click="publish">发送</van-button>
+					<van-button slot="button" size="small" hairline type="primary" :disabled="content === ''" @click="publish">发送</van-button>
 				</van-field>
 			</van-cell-group>
 		</div>
@@ -89,7 +91,7 @@
 </template>
 
 <script>
-let comment_id = 0, comment_index = 0
+let comment_id = 0, comment_index = -1
 import { mapState } from 'vuex'
 import { getDetail, publishComment, publishReply, delateReply, likeComment, letHot, likeArticle } from '@/api/api'
 export default {
@@ -149,11 +151,13 @@ export default {
 			name: '',						// 三级回复 被回复的name
 			placeholder: '发表神评妙论...',	// input默认文字
 			isHot: false,					// 是否推荐，每次进入都可以推荐
-			likeNum: 0,						// 文章点赞数
-			isLike: false,					// 是否点赞
 		}
 	},
 	methods: {
+		changeStatus() {
+			this.publishStatus = '1'
+			this.placeholder = '发表神评妙论...'
+		},
 		_getDeail(id) {
 			getDetail(id, this.page, this.count, String(this.$user.id)).then(res=>{
 				if(res.status === 200) {
@@ -171,21 +175,28 @@ export default {
 			})
 		},
 		report() {
-			console.log("我是举报")
-			console.log(this.n(2))
+			this.$router.push({
+				name:'report',
+				query:{
+					id: comment_id
+				}
+			})
 		},
 		goLikeArticle() {
 			if(this.$user.postbox) {
-				likeArticle(this.info.id, String(this.$user.id), this.likeNum).then(res=>{
+				likeArticle(this.info.id, String(this.$user.id), this.info.likes).then(res=>{
 					if(res.status === 200) {
+						console.log(comment_index)
 						this.$toast(res.message)
-						this.isLike = res.isLike
-						this.likeNum = res.isLike ? (this.likeNum + 1) : (this.likeNum - 1)
-						this.$store.commit('article/setLike', {
-							index: comment_index,
-							likes: this.likeNum,
-							isLike: this.isLike
-						})
+						this.info.isLike = res.isLike
+						this.info.likes = res.isLike ? (this.info.likes + 1) : (this.info.likes - 1)
+						if(comment_index !== -1) {
+							this.$store.commit('article/setLike', {
+								index: comment_index,
+								likes: this.info.likes,
+								isLike: this.info.isLike
+							})
+						}
 					}
 				})
 			} else {
@@ -236,6 +247,12 @@ export default {
 							time: '刚刚',
 							replys: []
 						})
+						if(comment_index !== -1) {
+							this.$store.commit('article/setComment', {
+								index: comment_index,
+								commnum: 1
+							})
+						}
 						this.content = ''
 					}
 				})
@@ -261,6 +278,12 @@ export default {
 							comment_name: this.$user.name,
 							content: this.content
 						})
+						if(comment_index !== -1) {
+							this.$store.commit('article/setComment', {
+								index: comment_index,
+								commnum: 1
+							})
+						}
 						this.content = ''
 					}
 				})
@@ -290,6 +313,12 @@ export default {
 							content: this.content,
 							reply_name: this.name
 						})
+						if(comment_index !== -1) {
+							this.$store.commit('article/setComment', {
+								index: comment_index,
+								commnum: 1
+							})
+						}
 						this.content = ''
 					}
 				})
@@ -321,6 +350,12 @@ export default {
 						if(res.status === 200) {
 							this.$toast(res.message)
 							this.comments.splice(index, 1)
+							if(comment_index !== -1) {
+								this.$store.commit('article/setComment', {
+									index: comment_index,
+									commnum: -1
+								})
+							}
 						} else {
 							this.$toast(res.error)
 						}
@@ -333,9 +368,7 @@ export default {
 	},
 	created() {
 		comment_id = this.$route.query.id
-		comment_index = this.$route.query.index
-		this.likeNum = this.$store.state.article.articleList[comment_index].likes
-		this.isLike = this.$store.state.article.articleList[comment_index].isLike
+		comment_index = this.$route.query.index === undefined ? -1 : this.$route.query.index
 		this._getDeail(comment_id)
 	}
 }
@@ -385,9 +418,13 @@ export default {
 		}
 		.address {
 			padding-bottom: 10px;
+			.article {
+				white-space: pre-line;
+			}
 			.author {
 				text-align: right;
 				padding-right: 30px;
+				font-size: 14px;
 			}
 		}
 		.report-box {

@@ -189,7 +189,7 @@ const likeComment = (typeId, userId, likeNum=0) => new Promise((resolve, reject)
  * signature     {string}        个性签名
  */
 const register = (data) => new Promise((resolve, reject) => {
-    axios.post(config.serverUrl + '/admin/index/register', data, {withCredentials: true}).then(res => {
+    axios.post(config.serverUrl + '/index/user/register', data, {withCredentials: true}).then(res => {
         resolve(res)
     }).catch(err => {
         reject(err)
@@ -199,7 +199,7 @@ const register = (data) => new Promise((resolve, reject) => {
  * 登录
  */
 const login = (postbox, password) => new Promise((resolve, reject) => {
-    axios.post(config.serverUrl + '/admin/index/login', {
+    axios.post(config.serverUrl + '/index/user/login', {
         postbox,
         password
     }).then(res => {
@@ -212,7 +212,7 @@ const login = (postbox, password) => new Promise((resolve, reject) => {
  * 验证邮箱是否已经注册
  */
 const isregister = (postbox) => new Promise((resolve, reject) => {
-    axios.get(config.serverUrl + '/admin/index/isregister', {
+    axios.get(config.serverUrl + '/index/user/isregister', {
         postbox
     }).then(res => {
         resolve(res)
@@ -328,10 +328,48 @@ const letHot = (id) => new Promise((resolve, reject) => {
  * value         {string} [require]        更新的值
  */
 const updateUser = (id, name, value) => new Promise((resolve, reject) => {
-    axios.post(config.serverUrl + '/admin/index/updateUser', {
+    axios.post(config.serverUrl + '/index/user/updateUser', {
         id,
         name,
         value
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
+/**
+ * 更改我的隐私状态
+ * id         {number} [require]        我的id
+ * value         {number} [require]        更新的值（0或者1）
+ */
+const updateSecret = (id, value) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/user/updateSecret', {
+        id,
+        value
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
+/**
+ * 举报/反馈
+ * userId         {number} [require]        举报人id
+ * articleId         {number} [require]        文章id
+ * check         {string} [require]        举报的选项
+ * message         {string}        举报的描述信息
+ * phone         {string}        举报人的邮箱或者微信号
+ */
+const report = (userId, articleId, check, message, phone) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/detail/report', {
+        userId,
+        articleId,
+        check,
+        message,
+        phone
     }).then(res => {
         resolve(res)
     }).catch(err => {
@@ -359,5 +397,7 @@ export {
     getUserMessage,
     attention,
     letHot,
-    updateUser
+    updateUser,
+    updateSecret,
+    report
 }

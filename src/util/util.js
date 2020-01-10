@@ -40,8 +40,23 @@ const mailReg = /^(\w-*\.*)+@(\w-?)+(\.\w{2,})+$/;
 // const passwordReg = /^(?![\d]+$)(?![a-zA-Z]+$)(?![!#$%^&*]+$)[\da-zA-Z!#$%^&*]{6,16}$/;      // 6-16位 数字、字母、特殊字符（除空格），起码其中两种组合
 // const passwordReg = /(?!^(\d+|[a-zA-Z]+|[~!@#$%^&*?]+)$)^[\w~!@#$%^&*?]{7,20}$/;      // 6-16位 数字、字母、特殊字符（除空格），起码其中两种组合
 const passwordReg = /^[a-zA-Z]{1}([a-zA-Z0-9]|[._]){5,15}$/;      // 6-16位 数字、字母、特殊字符（._)
+
+const debounce = (fn, t) => {
+    let delay = t || 500
+    let timer
+    return function () {
+        if (timer) {
+            clearTimeout(timer)
+        }
+        timer = setTimeout(() => {
+            fn.apply(this, arguments)
+        }, delay)
+    }
+}
+
 export {
 	Ajax,
 	mailReg,
-    passwordReg
+    passwordReg,
+    debounce
 }

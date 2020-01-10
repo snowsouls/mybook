@@ -1,28 +1,3 @@
-<!-- <template>
-	<div class="main">
-		sdgdgdfgf
-	</div>
-</template>
-
-<script>
-export default {
-	name: 'settings',
-	data() {
-		return {
-
-		}
-	},
-	methods: {
-
-	},
-}
-</script>
-
-<style lang="less" scoped>
-.main {
-	font-size: 30px;
-}
-</style> -->
 <template>
     <div>
         <div class="heart-content">
@@ -31,20 +6,52 @@ export default {
                 <label for="heart1"></label>
             </div>
         </div>
-        <div @click="logout">退出登录</div>
+        <van-cell-group>
+            <van-cell title="举报/反馈通知" label="是否允许在举报/反馈后通知您（默认允许）">
+                <van-switch slot="right-icon" v-model="checkedReport"  active-color="#07c160" inactive-color="#b4b4b4" size="24px" @change="changeReport"/>
+            </van-cell>
+        </van-cell-group>
+        <van-cell-group>
+            <van-cell title="隐私" label="是否允许他人查看你的个人信息（默认允许）">
+                <van-switch slot="right-icon" v-model="checkedSecret"  active-color="#07c160" inactive-color="#b4b4b4" size="24px" @change="changeSecret"/>
+            </van-cell>
+        </van-cell-group>
+        <div class="logout">
+            <van-button @click="logout" color="linear-gradient(to right, #4bb0ff, #6149f6)" round size="large">退出登录</van-button>
+        </div>
     </div>
 
 </template>
 
 <script>
+import { updateSecret } from '@/api/api'
+import { debounce } from '@/util/util'
 export default {
     name: "settings",
     data() {
         return {
-
+            checkedReport: false,
+            checkedSecret: false
         }
     },
     methods: {
+        changeReport: debounce(function(value) {
+            // let id = value ? 1 : 0
+            // updateSecret(this.$user.id, id).then(res=> {
+            //     if(res.status === 200) {
+            //         this.$toast(res.msg)
+            //     }
+            // })
+            console.log(value)
+        }),
+        changeSecret: debounce(function(value) {
+            let id = value ? 1 : 0
+            updateSecret(this.$user.id, id).then(res=> {
+                if(res.status === 200) {
+                    this.$toast(res.msg)
+                }
+            })
+        }),
         logout() {
             this.$store.commit('user/userLogout')
             this.$router.push({path: '/my'})
@@ -54,6 +61,22 @@ export default {
 </script>
 
 <style >
+    .logout {
+        margin-top: 20px;
+        padding: 0 30px;
+    }
+    .logout >>> .van-button--large {
+        height: 2.6rem;
+        line-height: 2.6rem;
+    }
+
+
+
+
+
+
+
+
     * {
 /*        -webkit-touch-callout:none; !*系统默认菜单被禁用*!*/
         -webkit-user-select:none; /*禁用文本复制*/
@@ -61,12 +84,12 @@ export default {
     }
 
     .heart-content{
-        float: right;
         display: inline-block;
         width: 90px;
         margin: 0px 10px;
         font-size: 20px;
         color: rgba(0,0,0,0.7);
+        margin-bottom: 20px;
     }
     .heart label {
         box-shadow: 0px 0px 0px 0px rgba(226, 32, 44, 0.5);
