@@ -2,7 +2,7 @@
     <div class="main">
     	<router-link class="basic-style msg" :to="login ? 'information' : 'login'">
     		<div class="picture">
-    			<img v-if="login" :src="infor.picture" alt="默认图" />
+    			<img v-if="login" :src="$config.imagesUrl + infor.picture" alt="默认图" />
     			<img v-else src="@/assets/default.jpg" alt="默认图" />
     		</div>
     		<div class="describe">

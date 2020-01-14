@@ -3,7 +3,7 @@
 		<div class="background">
 			<img src="@/assets/show.jpg" class="bj">
 			<div class="picture-box">
-				<img class="picture" :src="$user.picture" alt="图像">
+				<img class="picture" :src="$config.imagesUrl + $user.picture" alt="图像">
 			</div>
 			<div class="name">{{$user.name}}</div>
 		</div>

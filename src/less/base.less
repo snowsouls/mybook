@@ -86,17 +86,17 @@
     -moz-user-select: text;
   }
   
-  //禁止选择
+  //禁止选择(禁止选择后在ios的safari浏览器上input输入会出问题，看不到输入的文字)
   .no-user-select() {
-    -moz-user-select: none;
+    -moz-user-select: auto;
     /*火狐*/
-    -webkit-user-select: none;
+    -webkit-user-select: auto;
     /*webkit浏览器*/
-    -ms-user-select: none;
+    -ms-user-select: auto;
     /*IE10*/
-    -khtml-user-select: none;
+    -khtml-user-select: auto;
     /*早期浏览器*/
-    user-select: none;
+    user-select: auto;
   }
   
   //英文及特殊字符换行

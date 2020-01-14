@@ -1,10 +1,10 @@
 <template>
-	<div class="people">
+	<div class="people" v-if="userInfo">
 		<div class="bj-img">
 			<van-image
 				class="img"
 				fit="cover"
-				:src="userInfo.picture"
+				:src="$config.imagesUrl + userInfo.picture"
 			/>
 		</div>
 		<div class="main-box">
@@ -14,7 +14,7 @@
 						class="picture"
 						round
 						fit="cover"
-						:src="userInfo.picture"
+						:src="$config.imagesUrl + userInfo.picture"
 					/>
 				</div>
 				<van-sticky @scroll="scroll">
@@ -23,7 +23,7 @@
 							class="picture"
 							round
 							fit="cover"
-							:src="userInfo.picture"
+							:src="$config.imagesUrl + userInfo.picture"
 						/>
 						<div class="name">{{userInfo.name}}</div>
 						<div class="attention"  @click="attentionPeople">
@@ -113,6 +113,7 @@ export default {
 			choseArr: ['文章','点赞','收藏'],
 			choseIndex: 0,
 			page: 1,
+			count: 10,
 			isLoading: false,
 			lists: [],
 			loading: false,					// 数据加载完成
@@ -122,18 +123,23 @@ export default {
 	},
 	methods: {
 		_getInfo(id) {
-			Promise.all([getUserMessage(this.$user.id, id), getPublish(id, this.page)]).then(res=>{
+			Promise.all([getUserMessage(this.$user.id, id), getPublish(id, this.page, this.count)]).then(res=>{
 				if(res[0].status === 200 && res[1].status === 200) {
 					this.userInfo = res[0].data
 					this.isAttention = res[0].isAttention
 					this.lists = res[1].data.data
 					this.page ++
+					this.isLoading = false
+					this.finished = !res[1].data.has_more
 				}
 			})
 		},
 		onLoad() {
-			getPublish(user_id, this.page).then(res=>{
+			getPublish(user_id, this.page, this.count).then(res=>{
 				this.lists = this.lists.concat(res.data.data)
+				this.finished = !res.data.has_more
+				this.isLoading = false
+				this.loading = false
 			})
 		},
 		scroll(e) {
@@ -149,12 +155,16 @@ export default {
 				if(res.status === 200) {
 					this.$toast(res.message)
 					this.isLoading = false
+					this.loading = false
 					this.isAttention = res.isAttention
 				}
 			})
 		},
 		lookMsg(index) {
 			this.choseIndex = index
+		},
+		goDetail(id) {
+			this.$router.push({path: `detail?id=${id}`})
 		}
 	},
 	created() {

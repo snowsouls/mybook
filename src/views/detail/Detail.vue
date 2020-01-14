@@ -4,7 +4,7 @@
 			<div class="main">
 				<div class="title">
 					<div class="left">
-						<img :src="info.user.picture" alt="图像" />
+						<img :src="$config.imagesUrl + info.user.picture" alt="图像" />
 						<div>
 							<div class="name">{{ info.user.name }}</div>
 							<div class="time">{{ info.time | transformDate }}</div>
@@ -38,7 +38,7 @@
 			<van-list v-model="loading"	:finished="finished" :immediate-check="false" :finished-text="finishedText"	@load="onLoad">
 				<transition-group name="fade" tag="ul" class="comment-box">
 					<li class="comment" v-for="(item,index) in comments" :key="item.id">
-						<img :src="item.picture" class="picture" alt="图像" />
+						<img :src="$config.imagesUrl + item.picture" class="picture" alt="图像" />
 						<div class="right">
 							<div class="name-box">
 								<div class="name">{{item.name}}</div>
@@ -67,7 +67,7 @@
 					<div v-if="comments.length === 0" class="noComment" key="noComment">
 						<img class="img" src="@/assets/noComment.png" alt="图像" />
 						<p class="text">还没有人评论，点击抢沙发~</p>
-						<van-button class="btn" color="#bfbfbf" plain>立即评论</van-button>
+						<van-button class="btn" color="#bfbfbf" plain @click="getFocus">立即评论</van-button>
 					</div>
 				</transition-group>
 			</van-list>
@@ -154,6 +154,9 @@ export default {
 		}
 	},
 	methods: {
+		getFocus() {
+			this.$refs.vanField.focus()
+		},
 		changeStatus() {
 			this.publishStatus = '1'
 			this.placeholder = '发表神评妙论...'

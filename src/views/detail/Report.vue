@@ -8,7 +8,7 @@
 		</div>
 		<div class="title">更多问题及建议</div>
 		<div class="message-box">
-			<van-field v-model.trim="message" :autosize="{ maxHeight: 160 }" rows="3" type="textarea" placeholder="请描述问题或建议，二次抄袭请附时间和用户名" />
+			<van-field v-model.trim="message" :readonly="readonly" :autosize="{ maxHeight: 160 }" rows="3" type="textarea" placeholder="请描述问题或建议，二次抄袭请附时间和用户名" />
 		</div>
 		<div class="title">联系方式</div>
 		<div class="message-box">
@@ -30,7 +30,8 @@ export default {
 			choses: ['违法', '色情', '广告', '谣言', '二次抄袭', '恐怖恶心', '粗俗不堪', '其他'],
 			result: [],
 			message: '',
-			phone: ''
+			phone: '',
+			readonly: true
 		}
 	},
 	methods: {
@@ -45,6 +46,9 @@ export default {
 	},
 	created() {
 		this.articleId = this.$route.query.id
+		setTimeout(()=> {
+			this.readonly = false
+		}, 300)
 	}
 }
 </script>

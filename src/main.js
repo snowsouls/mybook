@@ -4,8 +4,11 @@ import router from './router/router'
 import store from './store/index'
 import user from '@/store/index'
 import utils from '@/util/index'
+import FastClick from 'fastclick'
+import config from '@/config/index'
 
 Vue.use(utils)
+FastClick.attach(document.body)
 
 import { Button,Field,Cell,CellGroup,List,Skeleton,Toast,Overlay, RadioGroup, Radio, ActionSheet, DatetimePicker, Popup, Dialog, Area, PullRefresh, SwipeCell, Sticky, Image, ImagePreview, Loading, Switch, Checkbox, CheckboxGroup } from 'vant'
 Vue.use(Button).use(Field).use(Cell).use(CellGroup).use(List).use(Skeleton).use(Toast).use(Overlay).use(ActionSheet).use(DatetimePicker).use(Popup).use(Dialog).use(Area)
@@ -13,6 +16,7 @@ Vue.use(Radio).use(RadioGroup).use(PullRefresh).use(SwipeCell).use(Sticky).use(I
 // 将所有 Toast 的展示时长设置为 2000 毫秒
 Toast.setDefaultOptions({ duration: 1500 });
 Vue.prototype.$user = user.state.user.userMessage
+Vue.prototype.$config = config
 
 Vue.config.productionTip = false
 

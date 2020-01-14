@@ -17,7 +17,7 @@ const actions = {
                 if(res.status === 200) {
                     localStorage.setItem("mybook_user_msg", JSON.stringify(res.user))
                     commit('userLogin', res.user)
-                    resolve()
+                    resolve(res.user)
                 }
             }).catch(err=> {
                 reject(err)
@@ -32,7 +32,6 @@ const mutations = {
         if(user) {
             state.userMessage = user
         }
-        localStorage.setItem("mybook_user_msg", JSON.stringify(state.userMessage));
     },
     userLogout (state) {
         state.userMessage = {}

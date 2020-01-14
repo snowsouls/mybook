@@ -63,9 +63,12 @@ module.exports = {
         // proxy: 'http://localhost:4000' // 配置跨域处理,只有一个代理
         proxy: {
             '/api': {
-                target: '<url>',
+                target: 'http://www.mybook.com/public/index.php',
                 ws: true,
-                changeOrigin: true
+                changeOrigin: true,
+                pathRewrite: {
+                  '^/api': '/'
+                }
             },
             '/foo': {
                 target: '<other_url>'

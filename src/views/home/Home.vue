@@ -15,6 +15,7 @@
 								</div>
 							</div>
 							<div class="content" :class="(articleIndex === index && handleDialog) && 'longClick'" @touchstart="gotouchstart($event, item, index)" @touchmove="gotouchmove" @touchend="gotouchend(item.id, index)">
+							<!-- <div class="content" :class="(articleIndex === index && handleDialog) && 'longClick'" @click="clickOrLongclick($event, item, index)"> -->
 								<div class="article" v-html="item.article"></div>
 								<div class="author" v-if="item.author || item.provenance">
 									<span>——</span>
@@ -47,18 +48,18 @@
 				<van-skeleton title avatar :row="3" :loading="initLoading"></van-skeleton>
 			</div>
 		</van-pull-refresh>
-		<div class="handleDialog" v-show="handleDialog" @touchstart.stop="handleDialog = false">
+		<div class="handleDialog" v-show="handleDialog" @touchstart="handleDialog = false">
 			<div class="handle-box" :class="{bottom: triangle}" :style="{top: handleTop + 'px'}">
-				<div class="handle left" @touchstart.stop="commentCotent()">评论</div>
-				<div class="handle" @touchstart.stop="setReport()">举报</div>
-				<div class="handle" v-if="$user.postbox === user.postbox || $user.authority === '1' || $user.authority === '2'" @touchstart.stop="delateArticle">删除</div>
-				<div class="handle right" @touchstart.stop="copyCotent">复制</div>
+				<div class="handle left" @touchstart="commentCotent()">评论</div>
+				<div class="handle" @touchstart="setReport()">举报</div>
+				<div class="handle" v-if="$user.postbox === user.postbox || $user.authority === '1' || $user.authority === '2'" @touchstart="delateArticle">删除</div>
+				<div class="handle right" data-clipboard-action="copy" @touchstart="copyCotent" ref="copybox">复制</div>
 			</div>
 		</div>
 		<div v-if="isleave">
 			<GoTop />
 		</div>
-		<input type="text" id="copybox" ref="copybox">
+		<!-- <input type="text" id="copybox" readonly ref="copybox"> -->
 	</div>
 </template>
 
@@ -155,6 +156,7 @@ export default {
 				}
 			})
 		},
+		// pc端的效果
 		gotouchstart(event, item, index){
 			timeOutEvent = setTimeout(()=> {
 				this.id = item.id
@@ -179,6 +181,8 @@ export default {
 		//手释放，如果在500毫秒内就释放，则取消长按事件，此时可以执行onclick应该执行的事件
 		gotouchend(id, index){
 			if(timeOutEvent){
+				clearTimeout(timeOutEvent)
+				timeOutEvent = null
 				//这里写要执行的内容,如onclick事件
 				// this.$router.push({path: `detail?id=${id}`})
 				this.$router.push({
@@ -189,8 +193,6 @@ export default {
 					}
 				})
 			}
-			clearTimeout(timeOutEvent)
-			timeOutEvent = null
 		},
 		//如果手指有移动，则取消所有事件，此时说明用户只是要移动而不是长按 
 		gotouchmove(){
@@ -201,13 +203,25 @@ export default {
 		copyCotent() {
 			clearTimeout(timeOutEvent)
 			this.handleDialog = false
-			//执行长按要执行的内容，
-			this.$refs.copybox.value = (this.articleList[this.articleIndex].article)
-			this.$refs.copybox.select()
-			document.execCommand("Copy")
-			this.$toast("已复制到剪贴板")
+			//执行长按要执行的内容，(原生)
+			// this.$refs.copybox.value = (this.articleList[this.articleIndex].article)
+			// this.$refs.copybox.select()
+			// document.execCommand("Copy")
+			// this.$toast("已复制到剪贴板")
 			
-			// var clipboard = new Clipboard('#copybox');'\r'
+			// 使用clipboard.js
+			let _this = this;
+			let clipboard = new Clipboard(_this.$refs.copybox, {
+				text: function() {
+	                return _this.articleList[_this.articleIndex].article
+	            }
+			});
+			clipboard.on('success', function () {
+				_this.$toast("已复制到剪贴板")
+			});
+			clipboard.on('error', function () {
+				_this.$toast("复制失败")
+			});
 		},
 		// 去评论
 		commentCotent(id, index) {
@@ -351,6 +365,7 @@ export default {
 				}
 			}
 			.content {
+				curser: pointer;
 				margin-bottom: 10px;
 				position: relative;
 				word-break: break-all;
