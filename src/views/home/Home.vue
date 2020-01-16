@@ -7,7 +7,7 @@
 						<div class="box" v-for="(item,index) in articleList" :key="index">
 							<div class="title">
 								<div class="left">
-									<img :src="item.user.picture" alt="图像" @click="goPeople(item.user_id, item.user.secret)"/>
+									<img :src="$config.imagesUrl + item.user.picture" alt="图像" @click="goPeople(item.user_id, item.user.secret)"/>
 									<div>
 										<div class="name">{{ item.user.name }}</div>
 										<div class="time">{{ item.time | transformDate }}</div>
@@ -24,6 +24,19 @@
 								</div>
 								
 							</div>
+
+							<div class="image-box" v-if="item.images">
+								<div class="iamge" v-for="(imgItem, imgIndex) in item.imagesArr" :key="imgIndex">
+									<div class="van-box" @click="lookImgDetail(item.imagesArr, imgIndex)">
+										<van-image
+											height="100%"
+											fit="cover"
+											:src="$config.imagesUrl + imgItem"
+										/>
+									</div>
+								</div>
+							</div>
+
 							<div class="like-box">
 								<div class="like" @click="goLikeArticle(item, index)">
 									<img :src="item.isLike ? require('../../assets/like-active.png') : require('../../assets/like.png')">
@@ -65,6 +78,7 @@
 
 <script>
 import GoTop from '@/components/goTop'
+import {ImagePreview} from "vant"
 import { mapState } from 'vuex'
 import { readArticleList, deteleArticle, likeArticle, collect } from '@/api/api'
 let timeOutEvent = null
@@ -78,6 +92,7 @@ export default {
 	},
 	data() {
 		return {
+			show: false,
 			homeTop : 0,			// 页面滚动位置
 			id: 0,					// 当前长按id
 			user: {},				// 当前长按信息
@@ -153,6 +168,18 @@ export default {
 				name:'report',
 				query:{
 					id
+				}
+			})
+		},
+		// 查看图片详情
+		lookImgDetail(imgItem, index) {
+			let imgs = imgItem.map(x => (this.$config.imagesUrl + x))
+			ImagePreview({
+				images: imgs,
+				maxZoom: 25,
+				startPosition: index,
+				onClose() {
+					// do something
 				}
 			})
 		},
@@ -381,6 +408,33 @@ export default {
 					font-size: 14px;
 				}
 				
+			}
+			.image-box {
+				width: 100%;
+				display: flex;
+				justify-content: space-between;
+				margin-bottom: 10px;
+				&:after {
+					content: " ";
+					width: 33%;
+				}
+				.iamge {
+					width: 33%;
+					padding-bottom: 33%;
+					text-align: center;
+					height: 0;
+					position: relative;
+					.van-box {
+						position: absolute;
+						top: 0;
+						left: 0;
+						width: 100%;
+						height: 100%;
+						& /deep/ .van-image__img {
+							transform: translateZ(0);
+						}
+					}
+				}
 			}
 			.like-box {
 				height: 40px;

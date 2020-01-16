@@ -1,6 +1,5 @@
 
 import { readArticleList } from '@/api/api'
-import config from '@/config/index'
 /**
  * state:当前状态树
  * obj: 提交actions时传的参数
@@ -11,7 +10,11 @@ const actions = {
     	return new Promise((resolve, reject)=> {
     		readArticleList(obj.count, obj.page, rootState.user.userMessage.id).then(res=>{
 				res.data.forEach(item=>{
-					item.user.picture = config.imagesUrl + item.user.picture	// 本地测试使用
+                    if(item.images) {
+    					item.imagesArr = item.images.split(',')	// 本地测试使用
+                    } else {
+                        item.imagesArr = []
+                    }
 				})
 				commit('setArticle', {
 					data: res.data,

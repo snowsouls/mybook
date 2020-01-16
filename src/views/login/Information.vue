@@ -1,8 +1,8 @@
 <template>
 	<div class="main">
 		<van-cell-group>
-			<van-cell title="头像" center is-link to="/information/picture" class="picture-box">
-				<img class="picture" :src="$config.imagesUrl + $user.picture || '@/assets/default_1.jpg'" alt="默认图" />
+			<van-cell title="头像" center class="picture-box">
+				<img class="picture" :src="$config.imagesUrl + $user.picture || '@/assets/default_1.jpg'" alt="默认图" @click="lookImgDetail($config.imagesUrl + $user.picture)" />
 			</van-cell>
 			<van-cell title="昵称" :value="$user.name" is-link :clickable="false" to="/information/message?param=name"/>
 			<van-cell title="账号" :value="$user.postbox" />
@@ -15,6 +15,7 @@
 </template>
 
 <script>
+import {ImagePreview} from "vant"
 import areaList from '@/assets/json/area'
 export default {
 	name: 'information',
@@ -56,10 +57,18 @@ export default {
 				path: '',
 				query: {param: 'name'}
 			})
+		},
+		lookImgDetail(url) {
+			ImagePreview({
+				images: [url],
+				maxZoom: 9,
+				onClose() {
+					// do something
+				}
+			})
 		}
 	},
 	created() {
-		console.log(this.$store.state)
 		if(!this.$user.postbox) {
 			this.$router.replace('my')
 		}

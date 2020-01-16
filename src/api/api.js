@@ -20,18 +20,32 @@ const readArticleList = (count, page, id) => new Promise((resolve, reject) => {
 /**
  * 发布文章
  */
-const publishArticle = (userId, article, author, provenance) => new Promise((resolve, reject) => {
+const publishArticle = (userId, article, author, provenance, image) => new Promise((resolve, reject) => {
     axios.post(config.serverUrl + '/index/index/publishArticle', {
         userId,
         article,
         author,
-        provenance
+        provenance,
+        image
     }).then(res => {
         resolve(res)
     }).catch(err => {
         reject(err)
     })
 })
+/**
+ * 发布文章时的图片
+ */
+const publishImage = (image) => new Promise((resolve, reject) => {
+    axios.post(config.serverUrl + '/index/index/publishImage', {
+        image
+    }).then(res => {
+        resolve(res)
+    }).catch(err => {
+        reject(err)
+    })
+})
+
 /**
  * 删除文章
  * user     {string} [require]     登陆者邮箱
@@ -380,6 +394,7 @@ const report = (userId, articleId, check, message, phone) => new Promise((resolv
 export {
     readArticleList,
     publishArticle,
+    publishImage,
     deteleArticle,
     getDetail,
     likeArticle,

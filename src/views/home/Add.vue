@@ -9,31 +9,41 @@
             </van-cell-group>
         </div>
 
+        <van-uploader
+          v-model="fileList"
+          multiple
+          :max-count="3"
+        />
         <!-- <van-cell-group>
             <van-field v-model="comment" autosize rows="3" type="textarea" placeholder="客官，能描述下嘛……" />
         </van-cell-group> -->
-        <van-button type="primary" :loading="loading" :disabled="disabled" size="large" round loading-text="发表中..." @click="publish"> 发表 </van-button>
+        <!-- <van-button type="primary" :loading="loading" :disabled="disabled" size="large" round loading-text="发表中..." @click="publish"> 发表 </van-button> -->
+        <van-button type="primary" size="large" round @click="publish"> 发表 </van-button>
     </div>
 </template>
 
 <script>
-import { publishArticle } from '@/api/api'
+import { publishArticle, publishImage } from '@/api/api'
 export default {
 	name: 'add',
+    computed: {
+        disabled() {
+            return (this.message === '' && this.fileList.length === 0)
+        }
+    },
     data() {
         return {
             message: '',
             author: '',
             provenance: '',
             comment: '',
-            disabled: false,
-            loading: false
+            loading: false,
+            fileList: []
         }
     },
     methods: {
         publish() {
             if(this.$user.postbox) {
-                if(this.message.trim() === '') return
                 let timer = setTimeout(()=>{
                     this.loading = true
                 },1000)
@@ -45,7 +55,13 @@ export default {
                         this.provenance = this.provenance + '》'
                     }
                 }
-                publishArticle(this.$user.id, this.message,this.author,this.provenance).then(res=>{
+                let fileList = []
+                if(this.fileList.length !== 0) {
+                    this.fileList.forEach(item=> {
+                        fileList.push(item.content)
+                    })
+                }
+                publishArticle(this.$user.id, this.message,this.author,this.provenance, fileList).then(res=>{
                     if(res.status === 200) {
                         this.$store.commit('article/addArticle', {
                             id: res.id,
@@ -54,6 +70,7 @@ export default {
                             commnum: 0,
                             isCollect: false,
                             isLike: false,
+                            imagesArr: fileList,
                             likes: 0,
                             provenance: this.provenance,
                             time: "刚刚",
@@ -62,6 +79,7 @@ export default {
                         this.message = ''
                         this.author = ''
                         this.provenance = ''
+                        this.fileList = []
                         this.loading = false
                         clearTimeout(timer)
                         this.$toast({
@@ -72,7 +90,7 @@ export default {
                             this.$router.push('home')
                         }, 1500)
                     }
-                })    
+                }) 
             } else {
                 this.$router.push({name: 'login'})
             }
@@ -83,6 +101,7 @@ export default {
 
 <style lang="less" scoped>
     .add {
+        touch-action: none;
         padding: 10px 10px 0;
         .title {
             height: 30px;

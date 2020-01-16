@@ -5,7 +5,6 @@
 			:images="images"
 			:show-index="false"
 			:async-close="true"
-			@close="show = true"
 		></van-image-preview>
 
 		<van-action-sheet v-model="show" cancel-text="取消" @cancel="show = false" :actions="actions" @select="onSelect"/>
@@ -46,6 +45,10 @@ export default {
 	},
 	mounted() {
 		
+	},
+	beforeRouteLeave(to,from,next) {
+		this.fixedShow = false
+		next()
 	}
 }
 </script>
