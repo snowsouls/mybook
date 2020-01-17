@@ -70,7 +70,7 @@ export default {
                             commnum: 0,
                             isCollect: false,
                             isLike: false,
-                            imagesArr: fileList,
+                            imagesArr: res.images.split(','),
                             likes: 0,
                             provenance: this.provenance,
                             time: "刚刚",

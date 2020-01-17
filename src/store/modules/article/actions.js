@@ -9,13 +9,6 @@ const actions = {
     setArticle({ state, commit, rootState }, obj) {
     	return new Promise((resolve, reject)=> {
     		readArticleList(obj.count, obj.page, rootState.user.userMessage.id).then(res=>{
-				res.data.forEach(item=>{
-                    if(item.images) {
-    					item.imagesArr = item.images.split(',')	// 本地测试使用
-                    } else {
-                        item.imagesArr = []
-                    }
-				})
 				commit('setArticle', {
 					data: res.data,
 					refresh: obj.refresh

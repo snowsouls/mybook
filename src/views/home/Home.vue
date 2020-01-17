@@ -25,15 +25,9 @@
 								
 							</div>
 
-							<div class="image-box" v-if="item.images">
+							<div class="image-box" v-if="item.imagesArr" :class="{'two-picture': item.imagesArr.length === 2}">
 								<div class="iamge" v-for="(imgItem, imgIndex) in item.imagesArr" :key="imgIndex">
-									<div class="van-box" @click="lookImgDetail(item.imagesArr, imgIndex)">
-										<van-image
-											height="100%"
-											fit="cover"
-											:src="$config.imagesUrl + imgItem"
-										/>
-									</div>
+									<img class="img" :preview="index" :src="$config.imagesUrl + imgItem" alt="图片">
 								</div>
 							</div>
 
@@ -87,7 +81,15 @@ export default {
 	components: { GoTop },
 	computed: {
 		...mapState({
-			articleList: state=> state.article.articleList
+			articleList: state=> {
+				let lists = state.article.articleList
+				lists.forEach(item=> {
+					if(item.images) {
+    					item.imagesArr = item.images.split(',')
+                    }
+				})
+				return lists
+			}
 		})
 	},
 	data() {
@@ -136,6 +138,9 @@ export default {
 		}
 	},
 	methods: {
+		handleClose() {
+			console.log("关闭图片")
+		},
 		_readArticleList(page, count=10, refresh) {		// 以后每次加载10条
 			this.$store.dispatch('article/setArticle', {
 				page,
@@ -168,18 +173,6 @@ export default {
 				name:'report',
 				query:{
 					id
-				}
-			})
-		},
-		// 查看图片详情
-		lookImgDetail(imgItem, index) {
-			let imgs = imgItem.map(x => (this.$config.imagesUrl + x))
-			ImagePreview({
-				images: imgs,
-				maxZoom: 25,
-				startPosition: index,
-				onClose() {
-					// do something
 				}
 			})
 		},
@@ -414,7 +407,7 @@ export default {
 				display: flex;
 				justify-content: space-between;
 				margin-bottom: 10px;
-				&:after {
+				&.two-picture:after {
 					content: " ";
 					width: 33%;
 				}
@@ -424,15 +417,13 @@ export default {
 					text-align: center;
 					height: 0;
 					position: relative;
-					.van-box {
+					overflow: hidden;
+					.img {
 						position: absolute;
 						top: 0;
 						left: 0;
 						width: 100%;
-						height: 100%;
-						& /deep/ .van-image__img {
-							transform: translateZ(0);
-						}
+						object-fit: cover;
 					}
 				}
 			}
